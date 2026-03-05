@@ -60,6 +60,25 @@ export interface Property {
   // Shared services fields
   sharedMeterIds?: string[]; // IDs of shared meters this property uses
   excludedFromSharedServices?: boolean; // For properties exempt from shared services
+  waterMeterId?: string; // ID of the water meter this property connects to (A, B, etc.)
+}
+
+// Water meter for tracking shared water bills
+export interface WaterMeter {
+  id: string; // Unique ID (e.g., "meter-A", "meter-B")
+  name: string; // Display name (e.g., "عداد مياه A", "عداد مياه B")
+  connectedPropertyIds: string[]; // List of property IDs served by this meter
+  month: string; // Format: "YYYY-MM"
+  previousReading?: number;
+  currentReading?: number;
+  totalBill: number; // Total water bill for this meter
+  perPropertyShare: number; // Amount each property should pay (total / count)
+  billDate?: string;
+  paid: boolean;
+  paidDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Payment history
@@ -214,4 +233,45 @@ export interface MonthlyUtility {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+// ============================================================================
+// NOTIFICATIONS SYSTEM
+// ============================================================================
+
+// Notification Types
+export type NotificationType =
+  | 'utility_bill_added'      // فاتورة شهرية جديدة
+  | 'payment_due_soon'        // موعد استحقاق قريب
+  | 'monthly_summary'         // ملخص شهري
+  | 'payment_overdue'         // فاتورة متأخرة
+  | 'contract_expiring'       // عقد ينتهي قريباً
+  | 'odd_month_water_reading' // شهر فردي - تسجيل قراءة المياه
+  | 'manual';                 // إشعار يدوي من الأدمن
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;              // العنوان بالعربية
+  message: string;            // الرسالة التفصيلية
+  read: boolean;              // مقروء/غير مقروء
+  link?: string;              // رابط للتوجيه (مثلاً: "/properties/123")
+  propertyId?: string;        // معرف العقار
+  property_name?: string;     // اسم العقار
+  amount?: number;            // المبلغ
+  dueDate?: string;           // تاريخ الاستحقاق
+  createdAt: string;          // وقت الإنشاء
+}
+
+export interface NotificationPreferences {
+  enabled: boolean;           // التشغيل الرئيسي
+  utilityBillAdded: boolean;  // إشعار عند إضافة فاتورة
+  paymentDueSoon: boolean;    // تذكير بالدفع
+  paymentDueDays: number;     // أيام قبل الموعد (افتراضي: 7)
+  monthlySummary: boolean;    // الملخص الشهري
+  monthlySummaryDay: number;  // يوم الشهر (افتراضي: 1)
+  paymentOverdue: boolean;    // الفواتير المتأخرة
+  contractExpiring: boolean;  // انتهاء العقود
+  contractExpiringDays: number; // أيام قبل الانتهاء (افتراضي: 30)
+  oddMonthWaterReading: boolean; // تذكير بشهر فردي للمياه
 }

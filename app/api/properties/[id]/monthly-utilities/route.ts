@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMonthlyUtility, getMonthlyUtilities, saveMonthlyUtility, deleteMonthlyUtility } from '@/lib/data';
+import { getMonthlyUtility, getMonthlyUtilities, saveMonthlyUtility, deleteMonthlyUtility, getProperty } from '@/lib/data';
+import { notifyUtilityBillAdded, checkOddMonthNotification } from '@/lib/notifications';
 
 export async function GET(
   request: NextRequest,
@@ -43,6 +44,26 @@ export async function POST(
       propertyId: id,
       ...body,
     });
+
+    // Trigger notification when utility bill is added
+    // Get property details for the notification
+    const property = await getProperty(id);
+    if (property) {
+      const totalAmount =
+        (utility.utilities.water?.amount || 0) +
+        (utility.utilities.electricity?.amount || 0) +
+        (utility.utilities.gas?.amount || 0);
+
+      await notifyUtilityBillAdded(
+        id,
+        property.name,
+        utility.month,
+        totalAmount
+      );
+
+      // Check if this is an odd month and notify about water readings
+      await checkOddMonthNotification(utility.month);
+    }
 
     return NextResponse.json(utility, { status: 201 });
   } catch (error) {

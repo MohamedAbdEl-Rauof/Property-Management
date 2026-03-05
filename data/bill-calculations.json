@@ -1,98 +1,17 @@
 [
   {
-    "propertyId": "1",
+    "propertyId": "10",
     "month": "2026-03",
     "rent": {
-      "amount": 1000,
-      "paid": 1000,
-      "unpaid": 0
-    },
-    "individualUtilities": {
-      "water": 0,
-      "electricity": 10,
-      "gas": 0,
-      "total": 10
-    },
-    "sharedServices": {
-      "building_water": 0,
-      "staircase_electricity": 0,
-      "building_maintenance": 0,
-      "general_cleaning": 0,
-      "total": 0
-    },
-    "totalDue": 1010,
-    "totalPaid": 1000,
-    "totalUnpaid": 10,
-    "paymentStatus": "partial",
-    "calculatedAt": "2026-03-05T19:47:14.625Z"
-  },
-  {
-    "propertyId": "1",
-    "month": "2026-02",
-    "rent": {
-      "amount": 1000,
-      "paid": 1000,
-      "unpaid": 0
-    },
-    "individualUtilities": {
-      "water": 0,
-      "electricity": 10,
-      "gas": 0,
-      "total": 10
-    },
-    "sharedServices": {
-      "building_water": 0,
-      "staircase_electricity": 0,
-      "building_maintenance": 0,
-      "general_cleaning": 0,
-      "total": 0
-    },
-    "totalDue": 1010,
-    "totalPaid": 1000,
-    "totalUnpaid": 10,
-    "paymentStatus": "partial",
-    "calculatedAt": "2026-03-05T19:47:49.688Z"
-  },
-  {
-    "propertyId": "1",
-    "month": "2026-08",
-    "rent": {
-      "amount": 1000,
-      "paid": 1000,
-      "unpaid": 0
-    },
-    "individualUtilities": {
-      "water": 0,
-      "electricity": 10,
-      "gas": 0,
-      "total": 10
-    },
-    "sharedServices": {
-      "building_water": 0,
-      "staircase_electricity": 0,
-      "building_maintenance": 0,
-      "general_cleaning": 0,
-      "total": 0
-    },
-    "totalDue": 1010,
-    "totalPaid": 1000,
-    "totalUnpaid": 10,
-    "paymentStatus": "partial",
-    "calculatedAt": "2026-03-05T19:47:52.263Z"
-  },
-  {
-    "propertyId": "5",
-    "month": "2026-03",
-    "rent": {
-      "amount": 2750,
-      "paid": 2750,
+      "amount": 3800,
+      "paid": 3800,
       "unpaid": 0
     },
     "individualUtilities": {
       "water": 0,
       "electricity": 0,
-      "gas": 187,
-      "total": 187
+      "gas": 54,
+      "total": 54
     },
     "sharedServices": {
       "building_water": 0,
@@ -101,10 +20,64 @@
       "general_cleaning": 0,
       "total": 0
     },
-    "totalDue": 2937,
-    "totalPaid": 2750,
-    "totalUnpaid": 187,
+    "totalDue": 3854,
+    "totalPaid": 3800,
+    "totalUnpaid": 54,
     "paymentStatus": "partial",
-    "calculatedAt": "2026-03-05T19:48:02.697Z"
+    "calculatedAt": "2026-03-05T22:19:50.771Z"
+  },
+  {
+    "propertyId": "6",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2600,
+      "paid": 2600,
+      "unpaid": 0
+    },
+    "individualUtilities": {
+      "water": 0,
+      "electricity": 0,
+      "gas": 216,
+      "total": 216
+    },
+    "sharedServices": {
+      "building_water": 0,
+      "staircase_electricity": 0,
+      "building_maintenance": 0,
+      "general_cleaning": 0,
+      "total": 0
+    },
+    "totalDue": 2816,
+    "totalPaid": 2600,
+    "totalUnpaid": 216,
+    "paymentStatus": "partial",
+    "calculatedAt": "2026-03-05T22:19:50.892Z"
+  },
+  {
+    "propertyId": "9",
+    "month": "2026-03",
+    "rent": {
+      "amount": 6000,
+      "paid": 6000,
+      "unpaid": 0
+    },
+    "individualUtilities": {
+      "water": 0,
+      "electricity": 0,
+      "gas": 0,
+      "total": 0
+    },
+    "sharedServices": {
+      "building_water": 0,
+      "staircase_electricity": 0,
+      "building_maintenance": 0,
+      "general_cleaning": 0,
+      "total": 0
+    },
+    "totalDue": 6000,
+    "totalPaid": 6000,
+    "totalUnpaid": 0,
+    "paymentStatus": "paid",
+    "calculatedAt": "2026-03-05T22:19:50.987Z"
   }
 ]

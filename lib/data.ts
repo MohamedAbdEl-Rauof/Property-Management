@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Property, PaymentRecord, SharedMeterConfig, SharedService, PropertyBillCalculation, MonthlyUtility } from './types';
+import { Property, PaymentRecord, SharedMeterConfig, SharedService, PropertyBillCalculation, MonthlyUtility, Notification, NotificationPreferences, WaterMeter } from './types';
 
 const dataDir = path.join(process.cwd(), 'data');
 const propertiesFile = path.join(dataDir, 'properties.json');
@@ -9,6 +9,9 @@ const sharedMeterConfigsFile = path.join(dataDir, 'shared-meter-configs.json');
 const sharedServicesFile = path.join(dataDir, 'shared-services.json');
 const billCalculationsFile = path.join(dataDir, 'bill-calculations.json');
 const monthlyUtilitiesFile = path.join(dataDir, 'monthly-utilities.json');
+const waterMetersFile = path.join(dataDir, 'water-meters.json');
+const notificationsFile = path.join(dataDir, 'notifications.json');
+const notificationPreferencesFile = path.join(dataDir, 'notification-preferences.json');
 
 // Ensure data directory exists
 async function ensureDataDir() {
@@ -277,7 +280,7 @@ export async function saveBillCalculations(calculations: PropertyBillCalculation
 // MONTHLY UTILITIES
 // ============================================================================
 
-async function getAllMonthlyUtilities(): Promise<MonthlyUtility[]> {
+export async function getAllMonthlyUtilities(): Promise<MonthlyUtility[]> {
   await ensureDataDir();
   try {
     const data = await fs.readFile(monthlyUtilitiesFile, 'utf-8');
@@ -355,4 +358,241 @@ export async function deleteMonthlyUtility(propertyId: string, month: string): P
 async function saveMonthlyUtilities(utilities: MonthlyUtility[]): Promise<void> {
   await ensureDataDir();
   await fs.writeFile(monthlyUtilitiesFile, JSON.stringify(utilities, null, 2), 'utf-8');
+}
+
+// ============================================================================
+// WATER METERS SYSTEM
+// ============================================================================
+
+export async function getWaterMeters(month?: string): Promise<WaterMeter[]> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(waterMetersFile, 'utf-8');
+    let meters = JSON.parse(data) || [];
+
+    if (month) {
+      meters = meters.filter((m: WaterMeter) => m.month === month);
+    }
+
+    return meters;
+  } catch {
+    return [];
+  }
+}
+
+export async function getWaterMeter(id: string): Promise<WaterMeter | null> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(waterMetersFile, 'utf-8');
+    const meters = JSON.parse(data) || [];
+    return meters.find((m: WaterMeter) => m.id === id) || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createWaterMeter(meter: Omit<WaterMeter, 'id' | 'createdAt' | 'updatedAt'>): Promise<WaterMeter> {
+  await ensureDataDir();
+  const meters = await getWaterMeters();
+
+  const newMeter: WaterMeter = {
+    ...meter,
+    id: `meter-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Calculate per-property share
+  newMeter.perPropertyShare = newMeter.totalBill / newMeter.connectedPropertyIds.length;
+
+  meters.push(newMeter);
+  await saveWaterMeters(meters);
+  return newMeter;
+}
+
+export async function updateWaterMeter(id: string, updates: Partial<WaterMeter>): Promise<WaterMeter | null> {
+  await ensureDataDir();
+  const meters = await getWaterMeters();
+  const index = meters.findIndex(m => m.id === id);
+
+  if (index === -1) return null;
+
+  const updatedMeter = {
+    ...meters[index],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Recalculate per-property share if total or connected properties changed
+  if (updates.totalBill !== undefined || updates.connectedPropertyIds !== undefined) {
+    updatedMeter.perPropertyShare = updatedMeter.totalBill / updatedMeter.connectedPropertyIds.length;
+  }
+
+  meters[index] = updatedMeter;
+  await saveWaterMeters(meters);
+  return updatedMeter;
+}
+
+export async function deleteWaterMeter(id: string): Promise<boolean> {
+  await ensureDataDir();
+  const meters = await getWaterMeters();
+  const filteredMeters = meters.filter(m => m.id !== id);
+
+  if (filteredMeters.length === meters.length) return false;
+
+  await saveWaterMeters(filteredMeters);
+  return true;
+}
+
+async function saveWaterMeters(meters: WaterMeter[]): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(waterMetersFile, JSON.stringify(meters, null, 2), 'utf-8');
+}
+
+export async function getWaterMeterForProperty(propertyId: string, month: string): Promise<WaterMeter | null> {
+  const meters = await getWaterMeters(month);
+  return meters.find(m => m.connectedPropertyIds.includes(propertyId)) || null;
+}
+
+// ============================================================================
+// NOTIFICATIONS SYSTEM
+// ============================================================================
+
+async function getAllNotifications(): Promise<Notification[]> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(notificationsFile, 'utf-8');
+    return JSON.parse(data) || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getNotifications(limit?: number, unreadOnly?: boolean): Promise<Notification[]> {
+  let notifications = await getAllNotifications();
+
+  // Sort by creation date (newest first)
+  notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // Filter by unread status if requested
+  if (unreadOnly) {
+    notifications = notifications.filter(n => !n.read);
+  }
+
+  // Limit results if specified
+  if (limit && limit > 0) {
+    notifications = notifications.slice(0, limit);
+  }
+
+  return notifications;
+}
+
+export async function getNotification(id: string): Promise<Notification | null> {
+  const notifications = await getAllNotifications();
+  return notifications.find(n => n.id === id) || null;
+}
+
+export async function createNotification(notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> {
+  const notifications = await getAllNotifications();
+  const newNotification: Notification = {
+    ...notification,
+    id: Date.now().toString(),
+    createdAt: new Date().toISOString(),
+  };
+
+  notifications.unshift(newNotification); // Add to beginning (newest first)
+  await saveNotifications(notifications);
+
+  // Clean up old notifications (older than 90 days)
+  await cleanupOldNotifications();
+
+  return newNotification;
+}
+
+export async function markNotificationAsRead(id: string): Promise<Notification | null> {
+  const notifications = await getAllNotifications();
+  const index = notifications.findIndex(n => n.id === id);
+
+  if (index === -1) return null;
+
+  notifications[index].read = true;
+  await saveNotifications(notifications);
+  return notifications[index];
+}
+
+export async function markAllNotificationsAsRead(): Promise<void> {
+  const notifications = await getAllNotifications();
+  notifications.forEach(n => n.read = true);
+  await saveNotifications(notifications);
+}
+
+export async function deleteNotification(id: string): Promise<boolean> {
+  const notifications = await getAllNotifications();
+  const filtered = notifications.filter(n => n.id !== id);
+
+  if (filtered.length === notifications.length) return false;
+
+  await saveNotifications(filtered);
+  return true;
+}
+
+export async function clearAllNotifications(): Promise<void> {
+  await saveNotifications([]);
+}
+
+async function saveNotifications(notifications: Notification[]): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(notificationsFile, JSON.stringify(notifications, null, 2), 'utf-8');
+}
+
+// Cleanup notifications older than 90 days
+async function cleanupOldNotifications(): Promise<void> {
+  const notifications = await getAllNotifications();
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+  const filtered = notifications.filter(n => new Date(n.createdAt) > ninetyDaysAgo);
+
+  if (filtered.length < notifications.length) {
+    await saveNotifications(filtered);
+  }
+}
+
+// Notification Preferences
+export async function getNotificationPreferences(): Promise<NotificationPreferences> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(notificationPreferencesFile, 'utf-8');
+    return JSON.parse(data) || {
+      enabled: true,
+      utilityBillAdded: true,
+      paymentDueSoon: true,
+      paymentDueDays: 7,
+      monthlySummary: true,
+      monthlySummaryDay: 1,
+      paymentOverdue: true,
+      contractExpiring: true,
+      contractExpiringDays: 30,
+      oddMonthWaterReading: true,
+    };
+  } catch {
+    return {
+      enabled: true,
+      utilityBillAdded: true,
+      paymentDueSoon: true,
+      paymentDueDays: 7,
+      monthlySummary: true,
+      monthlySummaryDay: 1,
+      paymentOverdue: true,
+      contractExpiring: true,
+      contractExpiringDays: 30,
+      oddMonthWaterReading: true,
+    };
+  }
+}
+
+export async function saveNotificationPreferences(preferences: NotificationPreferences): Promise<NotificationPreferences> {
+  await ensureDataDir();
+  await fs.writeFile(notificationPreferencesFile, JSON.stringify(preferences, null, 2), 'utf-8');
+  return preferences;
 }

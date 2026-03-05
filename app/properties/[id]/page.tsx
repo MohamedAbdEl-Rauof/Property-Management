@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Property, PropertyBillCalculation } from '@/lib/types';
+import { Property, PropertyBillCalculation, SharedService, SharedServiceType, SplitMethod } from '@/lib/types';
 import { Navigation } from '@/components/Navigation';
 import { PaymentStatusBadge } from '@/components/PaymentStatus';
 import { ContractAlert } from '@/components/ContractAlert';
@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowRight, Phone, Video, Save, Trash2, Building2, Zap, Flame, Droplet, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { ArrowRight, Phone, Video, Save, Trash2, Building2, Zap, Flame, Droplet, CheckCircle, XCircle, Calendar, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [property, setProperty] = useState<Property | null>(null);
@@ -26,6 +27,14 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
   const [billCalculation, setBillCalculation] = useState<PropertyBillCalculation | null>(null);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [loadingCalculation, setLoadingCalculation] = useState(false);
+
+  // Shared service form state
+  const [serviceType, setServiceType] = useState<SharedServiceType>('building_water');
+  const [serviceMonth, setServiceMonth] = useState('');
+  const [serviceAmount, setServiceAmount] = useState('');
+  const [splitMethod, setSplitMethod] = useState<SplitMethod>('equal');
+  const [addingService, setAddingService] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -49,6 +58,7 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const currentMonth = `${year}-${month}`;
     setSelectedMonth(currentMonth);
+    setServiceMonth(currentMonth);
   }, []);
 
   // Load bill calculation when month changes
@@ -100,6 +110,75 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
     if (res.ok) {
       router.push('/properties');
     }
+  };
+
+  const handleAddSharedService = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!property || !serviceAmount || !serviceMonth) {
+      toast.error('الرجاء ملء جميع الحقول المطلوبة');
+      return;
+    }
+
+    const amount = parseFloat(serviceAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('المبلغ يجب أن يكون رقماً صحيحاً أكبر من صفر');
+      return;
+    }
+
+    setAddingService(true);
+    try {
+      const response = await fetch('/api/shared-services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: serviceType,
+          name: getServiceLabel(serviceType),
+          month: serviceMonth,
+          totalAmount: amount,
+          splitMethod,
+          assignedProperties: [{
+            propertyId: property.id,
+            propertyName: property.name,
+            amount: splitMethod === 'equal' || splitMethod === 'by_rent_percentage'
+              ? amount  // Will be recalculated by API
+              : amount, // For custom, the full amount
+            paid: false,
+          }],
+          responsiblePerson: property.tenant.name,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('تم إضافة الخدمة المشتركة بنجاح');
+        // Reset form
+        setServiceAmount('');
+        setServiceType('building_water');
+        setSplitMethod('equal');
+        // Reload bill calculation if same month
+        if (serviceMonth === selectedMonth) {
+          loadBillCalculation();
+        }
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'فشل في إضافة الخدمة');
+      }
+    } catch (error) {
+      console.error('Error adding shared service:', error);
+      toast.error('فشل في إضافة الخدمة');
+    } finally {
+      setAddingService(false);
+    }
+  };
+
+  const getServiceLabel = (type: SharedServiceType) => {
+    const labels = {
+      building_water: 'مياه السلم',
+      staircase_electricity: 'كهرباء السلم',
+      building_maintenance: 'صيانة المبنى',
+      general_cleaning: 'نظافة عامة',
+    };
+    return labels[type];
   };
 
   if (loading) {
@@ -956,6 +1035,87 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                   <p className="text-sm mt-2">قم بإضافة خدمات مشتركة أولاً</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Section 6️⃣: إضافة خدمة مشتركة */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-2xl">6️⃣</span>
+                إضافة خدمة مشتركة
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAddSharedService} className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  أضف خدمة مشتركة لهذا العقار (مياه السلم، كهرباء السلم، صيانة، نظافة)
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>نوع الخدمة *</Label>
+                    <Select
+                      value={serviceType}
+                      onValueChange={(value) => setServiceType(value as SharedServiceType)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر نوع الخدمة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="building_water">مياه السلم</SelectItem>
+                        <SelectItem value="staircase_electricity">كهرباء السلم</SelectItem>
+                        <SelectItem value="building_maintenance">صيانة المبنى</SelectItem>
+                        <SelectItem value="general_cleaning">نظافة عامة</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>الشهر *</Label>
+                    <Input
+                      type="month"
+                      value={serviceMonth}
+                      onChange={(e) => setServiceMonth(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label>المبلغ الإجمالي *</Label>
+                    <Input
+                      type="number"
+                      value={serviceAmount}
+                      onChange={(e) => setServiceAmount(e.target.value)}
+                      placeholder="أدخل المبلغ"
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label>طريقة التقسيم *</Label>
+                    <Select
+                      value={splitMethod}
+                      onValueChange={(value) => setSplitMethod(value as SplitMethod)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر طريقة التقسيم" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="equal">تساوي بين كل الشقق</SelectItem>
+                        <SelectItem value="custom">نسبة مخصصة</SelectItem>
+                        <SelectItem value="by_rent_percentage">بالنسبة للإيجار</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={addingService}>
+                  {addingService ? 'جاري الإضافة...' : 'إضافة الخدمة'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>

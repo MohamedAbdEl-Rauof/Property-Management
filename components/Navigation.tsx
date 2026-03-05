@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Home, Building2, CreditCard, FileText, Plus } from 'lucide-react';
+import { Home, Building2, CreditCard, FileText, Plus, BarChart3 } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -13,6 +14,7 @@ export function Navigation() {
     { href: '/properties', label: 'العقارات', icon: Building2 },
     { href: '/payments', label: 'المدفوعات', icon: CreditCard },
     { href: '/contracts', label: 'العقود', icon: FileText },
+    { href: '/reports', label: 'التقارير', icon: BarChart3 },
   ];
 
   return (
@@ -43,13 +45,16 @@ export function Navigation() {
               })}
             </div>
           </div>
-          <Link
-            href="/properties/new"
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">إضافة عقار</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <Link
+              href="/properties/new"
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">إضافة عقار</span>
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

@@ -1,4 +1,4 @@
-import { Property, SharedService, PropertyBillCalculation, PropertySplit, MonthlyUtility } from './types';
+import { Property, SharedService, PropertyBillCalculation, PropertySplit, MonthlyUtility, WaterMeter } from './types';
 
 /**
  * Calculate split amounts for a shared service
@@ -68,18 +68,26 @@ export async function calculatePropertyTotal(
   month: string,
   properties: Property[],
   sharedServices: SharedService[],
-  monthlyUtilities?: MonthlyUtility[]
+  monthlyUtilities?: MonthlyUtility[],
+  waterMeters?: WaterMeter[]
 ): Promise<PropertyBillCalculation> {
   const property = properties.find(p => p.id === propertyId);
   if (!property) {
     throw new Error(`العقار ${propertyId} غير موجود`);
   }
 
-  // Skip if property is excluded from shared services
-  if (property.excludedFromSharedServices) {
-    sharedServices = sharedServices.filter(s =>
-      !s.assignedProperties.some(ap => ap.propertyId === propertyId)
-    );
+  // Auto-exclude stores from shared services and water
+  const isStore = property.type === 'store';
+  const isExcluded = property.excludedFromSharedServices || isStore;
+
+  // Filter shared services for this property
+  let propertySharedServices = sharedServices.filter(service =>
+    service.assignedProperties.some(p => p.propertyId === propertyId)
+  );
+
+  // Exclude stores from shared services
+  if (isExcluded) {
+    propertySharedServices = [];
   }
 
   // Calculate rent
@@ -89,12 +97,31 @@ export async function calculatePropertyTotal(
     unpaid: property.rent.amount - (property.rent.paidAmount || 0)
   };
 
-  // Calculate individual utilities - use monthly utilities if available, otherwise fall back to fixed values
+  // Calculate individual utilities
   const monthlyUtility = monthlyUtilities?.find(u => u.propertyId === propertyId && u.month === month);
 
-  const waterAmount = monthlyUtility?.utilities.water.amount || property.utilities.waterAmount || 0;
+  // Water: Use water meter per-property share if available, otherwise fall back to monthly utility
+  let waterAmount = 0;
+  if (!isStore) {
+    // Try to get water from water meter first
+    const waterMeter = waterMeters?.find(m =>
+      m.month === month && m.connectedPropertyIds.includes(propertyId)
+    );
+
+    if (waterMeter) {
+      waterAmount = waterMeter.perPropertyShare;
+    } else {
+      // Fall back to monthly utility
+      waterAmount = monthlyUtility?.utilities.water.amount || property.utilities.waterAmount || 0;
+    }
+  }
+
   const electricityAmount = monthlyUtility?.utilities.electricity.amount || property.utilities.electricityAmount || 0;
-  const gasAmount = monthlyUtility?.utilities.gas.amount || property.utilities.gasAmount || 0;
+
+  // Stores don't have gas
+  const gasAmount = isStore
+    ? 0
+    : (monthlyUtility?.utilities.gas.amount || property.utilities.gasAmount || 0);
 
   const individualUtilities = {
     water: waterAmount,
@@ -104,10 +131,6 @@ export async function calculatePropertyTotal(
   };
 
   // Calculate shared services
-  const propertySharedServices = sharedServices.filter(service =>
-    service.assignedProperties.some(p => p.propertyId === propertyId)
-  );
-
   const sharedServicesTotals = {
     building_water: 0,
     staircase_electricity: 0,
@@ -155,7 +178,8 @@ export async function recalculateMonthBills(
   month: string,
   properties: Property[],
   sharedServices: SharedService[],
-  monthlyUtilities?: MonthlyUtility[]
+  monthlyUtilities?: MonthlyUtility[],
+  waterMeters?: WaterMeter[]
 ): Promise<PropertyBillCalculation[]> {
   const calculations: PropertyBillCalculation[] = [];
 
@@ -166,7 +190,8 @@ export async function recalculateMonthBills(
         month,
         properties,
         sharedServices,
-        monthlyUtilities
+        monthlyUtilities,
+        waterMeters
       );
       calculations.push(calculation);
     } catch (error) {
