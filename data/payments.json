@@ -1,0 +1,233 @@
+[
+  {
+    "propertyId": "4",
+    "month": "2026-04",
+    "rent": {
+      "amount": 3000,
+      "paid": 3000,
+      "status": "paid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "4-2026-04",
+    "createdAt": "2026-03-05T13:43:16.858Z"
+  },
+  {
+    "propertyId": "4",
+    "month": "2026-03",
+    "rent": {
+      "amount": 3000,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "4-2026-03",
+    "createdAt": "2026-03-05T14:00:27.194Z"
+  },
+  {
+    "propertyId": "1",
+    "month": "2026-03",
+    "rent": {
+      "amount": 1000,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "1-2026-03",
+    "createdAt": "2026-03-05T14:00:23.490Z"
+  },
+  {
+    "propertyId": "2",
+    "month": "2026-03",
+    "rent": {
+      "amount": 650,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "2-2026-03",
+    "createdAt": "2026-03-05T14:00:25.005Z"
+  },
+  {
+    "propertyId": "3",
+    "month": "2026-03",
+    "rent": {
+      "amount": 500,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "3-2026-03",
+    "createdAt": "2026-03-05T14:00:25.951Z"
+  },
+  {
+    "propertyId": "5",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2750,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "5-2026-03",
+    "createdAt": "2026-03-05T14:00:28.790Z"
+  },
+  {
+    "propertyId": "6",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2600,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "6-2026-03",
+    "createdAt": "2026-03-05T14:00:31.059Z"
+  },
+  {
+    "propertyId": "10",
+    "month": "2026-03",
+    "rent": {
+      "amount": 3800,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "10-2026-03",
+    "createdAt": "2026-03-05T14:00:35.825Z"
+  },
+  {
+    "propertyId": "9",
+    "month": "2026-03",
+    "rent": {
+      "amount": 6000,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "9-2026-03",
+    "createdAt": "2026-03-05T14:00:37.731Z"
+  },
+  {
+    "propertyId": "8",
+    "month": "2026-03",
+    "rent": {
+      "amount": 3000,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "8-2026-03",
+    "createdAt": "2026-03-05T14:00:39.124Z"
+  },
+  {
+    "propertyId": "7",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2500,
+      "paid": 0,
+      "status": "unpaid"
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "id": "7-2026-03",
+    "createdAt": "2026-03-05T14:00:40.734Z"
+  }
+]

@@ -1,64 +1,142 @@
-import Image from "next/image";
+import { getProperties } from '@/lib/data';
+import { Navigation } from '@/components/Navigation';
+import { PropertyCard } from '@/components/PropertyCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Building2, Users, TrendingUp, AlertTriangle } from 'lucide-react';
 
-export default function Home() {
+export default async function DashboardPage() {
+  const properties = await getProperties();
+
+  // Calculate stats
+  const totalProperties = properties.length;
+  const occupiedProperties = properties.filter(p => p.tenant.name).length;
+  const paidProperties = properties.filter(p => p.rent.paymentStatus === 'paid').length;
+  const unpaidProperties = properties.filter(p => p.rent.paymentStatus === 'unpaid' || p.rent.paymentStatus === 'partial').length;
+
+  // Calculate collection rate
+  const totalRent = properties.reduce((sum, p) => sum + p.rent.amount, 0);
+  const totalPaid = properties.reduce((sum, p) => sum + (p.rent.paidAmount || 0), 0);
+  const collectionRate = totalRent > 0 ? Math.round((totalPaid / totalRent) * 100) : 0;
+
+  // Find expiring contracts (within 30 days)
+  const now = new Date();
+  const expiringContracts = properties.filter(p => {
+    const [month, day] = p.tenant.contractEnd.split('-').map(Number);
+    let contractDate = new Date(now.getFullYear(), month - 1, day);
+    if (contractDate < now) {
+      contractDate = new Date(now.getFullYear() + 1, month - 1, day);
+    }
+    const diffDays = Math.ceil((contractDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays <= 30;
+  });
+
+  const stats = [
+    {
+      title: 'إجمالي العقارات',
+      value: totalProperties,
+      icon: Building2,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
+    },
+    {
+      title: 'العقارات المؤجرة',
+      value: occupiedProperties,
+      icon: Users,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
+    },
+    {
+      title: 'نسبة التحصيل',
+      value: `${collectionRate}%`,
+      icon: TrendingUp,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
+    },
+    {
+      title: 'عقود تنتهي قريباً',
+      value: expiringContracts.length,
+      icon: AlertTriangle,
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-100',
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
+          <p className="text-gray-600 mt-1">نظرة عامة على جميع العقارات</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`${stat.bgColor} p-2 rounded-lg`}>
+                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
+
+        {/* Alert for unpaid rents */}
+        {unpaidProperties > 0 && (
+          <Card className="mb-8 border-amber-200 bg-amber-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-amber-800">
+                <AlertTriangle className="h-5 w-5" />
+                تنبيه: إيجارات غير مدفوعة
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-amber-900">
+                يوجد {unpaidProperties} عقار بإيجارات غير مدفوعة أو مدفوعة جزئياً
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Properties Grid */}
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">جميع العقارات</h2>
+        </div>
+
+        {properties.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Building2 className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">لا توجد عقارات</h3>
+              <p className="text-gray-600 mb-4 text-center">
+                ابدأ بإضافة عقارك الأول لتتمكن من متابعة الإيجارات والمستحقات
+              </p>
+              <a
+                href="/properties/new"
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                إضافة عقار جديد
+              </a>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {properties.map((property) => (
+              <PropertyCard key={property.id} property={property} />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
