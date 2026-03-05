@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPropertyBillCalculation, saveBillCalculation } from '@/lib/data';
+import { getPropertyBillCalculation, saveBillCalculation, getMonthlyUtilities } from '@/lib/data';
 import { calculatePropertyTotal } from '@/lib/calculations';
 import { getProperties, getSharedServices } from '@/lib/data';
 
@@ -17,12 +17,14 @@ export async function GET(
     if (!calculation) {
       const properties = await getProperties();
       const sharedServices = await getSharedServices(month);
+      const monthlyUtilities = await getMonthlyUtilities(propertyId);
 
       calculation = await calculatePropertyTotal(
         propertyId,
         month,
         properties,
-        sharedServices
+        sharedServices,
+        monthlyUtilities
       );
 
       await saveBillCalculation(calculation);
@@ -48,12 +50,14 @@ export async function POST(
     // Force recalculation
     const properties = await getProperties();
     const sharedServices = await getSharedServices(month);
+    const monthlyUtilities = await getMonthlyUtilities(propertyId);
 
     const calculation = await calculatePropertyTotal(
       propertyId,
       month,
       properties,
-      sharedServices
+      sharedServices,
+      monthlyUtilities
     );
 
     await saveBillCalculation(calculation);

@@ -185,3 +185,33 @@ export interface SharedServicePayment {
   paymentDate?: string;
   notes?: string;
 }
+
+// ============================================================================
+// MONTHLY UTILITIES
+// ============================================================================
+
+// Monthly utility bill record for a property
+export interface MonthlyUtility {
+  id: string; // Format: "{propertyId}-{month}"
+  propertyId: string;
+  month: string; // Format: "YYYY-MM"
+  utilities: {
+    water: {
+      amount: number;
+      paid: boolean;
+      notes?: string;
+    };
+    electricity: {
+      amount: number;
+      paid: boolean;
+      notes?: string;
+    };
+    gas: {
+      amount: number;
+      paid: boolean;
+      notes?: string;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+}

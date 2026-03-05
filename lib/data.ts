@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Property, PaymentRecord, SharedMeterConfig, SharedService, PropertyBillCalculation } from './types';
+import { Property, PaymentRecord, SharedMeterConfig, SharedService, PropertyBillCalculation, MonthlyUtility } from './types';
 
 const dataDir = path.join(process.cwd(), 'data');
 const propertiesFile = path.join(dataDir, 'properties.json');
@@ -8,6 +8,7 @@ const paymentsFile = path.join(dataDir, 'payments.json');
 const sharedMeterConfigsFile = path.join(dataDir, 'shared-meter-configs.json');
 const sharedServicesFile = path.join(dataDir, 'shared-services.json');
 const billCalculationsFile = path.join(dataDir, 'bill-calculations.json');
+const monthlyUtilitiesFile = path.join(dataDir, 'monthly-utilities.json');
 
 // Ensure data directory exists
 async function ensureDataDir() {
@@ -270,4 +271,88 @@ export async function saveBillCalculation(calculation: PropertyBillCalculation):
 export async function saveBillCalculations(calculations: PropertyBillCalculation[]): Promise<void> {
   await ensureDataDir();
   await fs.writeFile(billCalculationsFile, JSON.stringify(calculations, null, 2), 'utf-8');
+}
+
+// ============================================================================
+// MONTHLY UTILITIES
+// ============================================================================
+
+async function getAllMonthlyUtilities(): Promise<MonthlyUtility[]> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(monthlyUtilitiesFile, 'utf-8');
+    return JSON.parse(data) || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getMonthlyUtilities(propertyId: string, month?: string): Promise<MonthlyUtility[]> {
+  const utilities = await getAllMonthlyUtilities();
+  const filtered = utilities.filter((u: MonthlyUtility) => u.propertyId === propertyId);
+  if (month) {
+    return filtered.filter((u: MonthlyUtility) => u.month === month);
+  }
+  return filtered;
+}
+
+export async function getMonthlyUtility(propertyId: string, month: string): Promise<MonthlyUtility | null> {
+  const utilities = await getMonthlyUtilities(propertyId);
+  return utilities.find(u => u.month === month) || null;
+}
+
+export async function saveMonthlyUtility(utility: Omit<MonthlyUtility, 'id' | 'createdAt' | 'updatedAt'>): Promise<MonthlyUtility> {
+  const allUtilities = await getAllMonthlyUtilities();
+  const id = `${utility.propertyId}-${utility.month}`;
+  const now = new Date().toISOString();
+
+  const newUtility: MonthlyUtility = {
+    ...utility,
+    id,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const existingIndex = allUtilities.findIndex(u => u.id === id);
+  if (existingIndex >= 0) {
+    allUtilities[existingIndex] = { ...allUtilities[existingIndex], ...newUtility, createdAt: allUtilities[existingIndex].createdAt };
+  } else {
+    allUtilities.push(newUtility);
+  }
+
+  await saveMonthlyUtilities(allUtilities);
+  return newUtility;
+}
+
+export async function updateMonthlyUtilityPaymentStatus(
+  propertyId: string,
+  month: string,
+  utilityType: 'water' | 'electricity' | 'gas',
+  paid: boolean
+): Promise<MonthlyUtility | null> {
+  const utilities = await getMonthlyUtilities(propertyId);
+  const index = utilities.findIndex(u => u.propertyId === propertyId && u.month === month);
+
+  if (index === -1) return null;
+
+  utilities[index].utilities[utilityType].paid = paid;
+  utilities[index].updatedAt = new Date().toISOString();
+
+  await saveMonthlyUtilities(utilities);
+  return utilities[index];
+}
+
+export async function deleteMonthlyUtility(propertyId: string, month: string): Promise<boolean> {
+  const allUtilities = await getAllMonthlyUtilities();
+  const filtered = allUtilities.filter(u => !(u.propertyId === propertyId && u.month === month));
+
+  if (filtered.length === allUtilities.length) return false;
+
+  await saveMonthlyUtilities(filtered);
+  return true;
+}
+
+async function saveMonthlyUtilities(utilities: MonthlyUtility[]): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(monthlyUtilitiesFile, JSON.stringify(utilities, null, 2), 'utf-8');
 }

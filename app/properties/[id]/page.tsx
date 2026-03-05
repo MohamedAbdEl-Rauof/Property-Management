@@ -7,6 +7,7 @@ import { Navigation } from '@/components/Navigation';
 import { PaymentStatusBadge } from '@/components/PaymentStatus';
 import { ContractAlert } from '@/components/ContractAlert';
 import { BillBreakdown } from '@/components/shared-services/BillBreakdown';
+import { MonthlyUtilityDisplay } from '@/components/MonthlyUtilityDisplay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -502,36 +503,12 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   <div className="border-t pt-3">
-                    <h4 className="font-semibold text-gray-900 mb-3">الفواتير الحالية</h4>
-                    <div className="space-y-2">
-                      {property.utilities.electricityAmount && property.utilities.electricityAmount > 0 && (
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                          <div className="flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-yellow-600" />
-                            <span>الكهرباء</span>
-                          </div>
-                          <span className="font-semibold">{property.utilities.electricityAmount} ج.م</span>
-                        </div>
-                      )}
-                      {property.utilities.gasAmount && property.utilities.gasAmount > 0 && (
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                          <div className="flex items-center gap-2">
-                            <Flame className="h-4 w-4 text-orange-600" />
-                            <span>الغاز</span>
-                          </div>
-                          <span className="font-semibold">{property.utilities.gasAmount} ج.م</span>
-                        </div>
-                      )}
-                      {property.utilities.waterAmount && property.utilities.waterAmount > 0 && (
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                          <div className="flex items-center gap-2">
-                            <Droplet className="h-4 w-4 text-blue-600" />
-                            <span>المياه + خدمات</span>
-                          </div>
-                          <span className="font-semibold">{property.utilities.waterAmount} ج.م</span>
-                        </div>
-                      )}
-                    </div>
+                    <MonthlyUtilityDisplay
+                      propertyId={property.id}
+                      propertyName={property.name}
+                      month={selectedMonth}
+                      onUpdated={loadBillCalculation}
+                    />
                   </div>
                 </div>
               )}

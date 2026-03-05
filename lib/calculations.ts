@@ -1,4 +1,4 @@
-import { Property, SharedService, PropertyBillCalculation, PropertySplit } from './types';
+import { Property, SharedService, PropertyBillCalculation, PropertySplit, MonthlyUtility } from './types';
 
 /**
  * Calculate split amounts for a shared service
@@ -67,7 +67,8 @@ export async function calculatePropertyTotal(
   propertyId: string,
   month: string,
   properties: Property[],
-  sharedServices: SharedService[]
+  sharedServices: SharedService[],
+  monthlyUtilities?: MonthlyUtility[]
 ): Promise<PropertyBillCalculation> {
   const property = properties.find(p => p.id === propertyId);
   if (!property) {
@@ -88,14 +89,18 @@ export async function calculatePropertyTotal(
     unpaid: property.rent.amount - (property.rent.paidAmount || 0)
   };
 
-  // Calculate individual utilities
+  // Calculate individual utilities - use monthly utilities if available, otherwise fall back to fixed values
+  const monthlyUtility = monthlyUtilities?.find(u => u.propertyId === propertyId && u.month === month);
+
+  const waterAmount = monthlyUtility?.utilities.water.amount || property.utilities.waterAmount || 0;
+  const electricityAmount = monthlyUtility?.utilities.electricity.amount || property.utilities.electricityAmount || 0;
+  const gasAmount = monthlyUtility?.utilities.gas.amount || property.utilities.gasAmount || 0;
+
   const individualUtilities = {
-    water: property.utilities.waterAmount || 0,
-    electricity: property.utilities.electricityAmount || 0,
-    gas: property.utilities.gasAmount || 0,
-    total: (property.utilities.waterAmount || 0) +
-           (property.utilities.electricityAmount || 0) +
-           (property.utilities.gasAmount || 0)
+    water: waterAmount,
+    electricity: electricityAmount,
+    gas: gasAmount,
+    total: waterAmount + electricityAmount + gasAmount
   };
 
   // Calculate shared services
@@ -149,7 +154,8 @@ export async function calculatePropertyTotal(
 export async function recalculateMonthBills(
   month: string,
   properties: Property[],
-  sharedServices: SharedService[]
+  sharedServices: SharedService[],
+  monthlyUtilities?: MonthlyUtility[]
 ): Promise<PropertyBillCalculation[]> {
   const calculations: PropertyBillCalculation[] = [];
 
@@ -159,7 +165,8 @@ export async function recalculateMonthBills(
         property.id,
         month,
         properties,
-        sharedServices
+        sharedServices,
+        monthlyUtilities
       );
       calculations.push(calculation);
     } catch (error) {
