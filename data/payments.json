@@ -46,8 +46,8 @@
     "month": "2026-03",
     "rent": {
       "amount": 1000,
-      "paid": 1000,
-      "status": "paid"
+      "paid": 0,
+      "status": "unpaid"
     },
     "utilities": {
       "water": {
@@ -60,15 +60,15 @@
       }
     },
     "id": "1-2026-03",
-    "createdAt": "2026-03-05T22:16:48.742Z"
+    "createdAt": "2026-03-06T10:59:19.452Z"
   },
   {
     "propertyId": "2",
     "month": "2026-03",
     "rent": {
       "amount": 650,
-      "paid": 650,
-      "status": "paid"
+      "paid": 0,
+      "status": "unpaid"
     },
     "utilities": {
       "water": {
@@ -81,15 +81,15 @@
       }
     },
     "id": "2-2026-03",
-    "createdAt": "2026-03-05T22:16:52.040Z"
+    "createdAt": "2026-03-06T10:34:29.517Z"
   },
   {
     "propertyId": "3",
     "month": "2026-03",
     "rent": {
       "amount": 500,
-      "paid": 500,
-      "status": "paid"
+      "paid": 0,
+      "status": "unpaid"
     },
     "utilities": {
       "water": {
@@ -102,7 +102,7 @@
       }
     },
     "id": "3-2026-03",
-    "createdAt": "2026-03-05T22:17:42.950Z"
+    "createdAt": "2026-03-06T10:34:10.111Z"
   },
   {
     "propertyId": "5",

@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Property, PropertyBillCalculation, SharedService, SharedServiceType, SplitMethod } from '@/lib/types';
+import { Property } from '@/lib/types';
 import { Navigation } from '@/components/Navigation';
-import { PaymentStatusBadge } from '@/components/PaymentStatus';
 import { ContractAlert } from '@/components/ContractAlert';
-import { BillBreakdown } from '@/components/shared-services/BillBreakdown';
-import { MonthlyUtilityDisplay } from '@/components/MonthlyUtilityDisplay';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,25 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowRight, Phone, Video, Save, Trash2, Building2, Zap, Flame, Droplet, CheckCircle, XCircle, Calendar, Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { ArrowRight, Phone, Video, Save, Trash2, Building2, Zap, Flame, Droplet } from 'lucide-react';
 
 export default function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editedProperty, setEditedProperty] = useState<Property | null>(null);
-  const [billCalculation, setBillCalculation] = useState<PropertyBillCalculation | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [loadingCalculation, setLoadingCalculation] = useState(false);
-
-  // Shared service form state
-  const [serviceType, setServiceType] = useState<SharedServiceType>('building_water');
-  const [serviceMonth, setServiceMonth] = useState('');
-  const [serviceAmount, setServiceAmount] = useState('');
-  const [splitMethod, setSplitMethod] = useState<SplitMethod>('equal');
-  const [addingService, setAddingService] = useState(false);
 
   const router = useRouter();
 
@@ -50,40 +35,6 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
     };
     loadProperty();
   }, [params]);
-
-  // Set current month on load
-  useEffect(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const currentMonth = `${year}-${month}`;
-    setSelectedMonth(currentMonth);
-    setServiceMonth(currentMonth);
-  }, []);
-
-  // Load bill calculation when month changes
-  useEffect(() => {
-    if (property && selectedMonth) {
-      loadBillCalculation();
-    }
-  }, [property, selectedMonth]);
-
-  const loadBillCalculation = async () => {
-    if (!property || !selectedMonth) return;
-
-    setLoadingCalculation(true);
-    try {
-      const res = await fetch(`/api/bill-calculations/${property.id}/${selectedMonth}`);
-      if (res.ok) {
-        const data = await res.json();
-        setBillCalculation(data);
-      }
-    } catch (error) {
-      console.error('Error loading bill calculation:', error);
-    } finally {
-      setLoadingCalculation(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!editedProperty) return;
@@ -110,75 +61,6 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
     if (res.ok) {
       router.push('/properties');
     }
-  };
-
-  const handleAddSharedService = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!property || !serviceAmount || !serviceMonth) {
-      toast.error('الرجاء ملء جميع الحقول المطلوبة');
-      return;
-    }
-
-    const amount = parseFloat(serviceAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error('المبلغ يجب أن يكون رقماً صحيحاً أكبر من صفر');
-      return;
-    }
-
-    setAddingService(true);
-    try {
-      const response = await fetch('/api/shared-services', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: serviceType,
-          name: getServiceLabel(serviceType),
-          month: serviceMonth,
-          totalAmount: amount,
-          splitMethod,
-          assignedProperties: [{
-            propertyId: property.id,
-            propertyName: property.name,
-            amount: splitMethod === 'equal' || splitMethod === 'by_rent_percentage'
-              ? amount  // Will be recalculated by API
-              : amount, // For custom, the full amount
-            paid: false,
-          }],
-          responsiblePerson: property.tenant.name,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success('تم إضافة الخدمة المشتركة بنجاح');
-        // Reset form
-        setServiceAmount('');
-        setServiceType('building_water');
-        setSplitMethod('equal');
-        // Reload bill calculation if same month
-        if (serviceMonth === selectedMonth) {
-          loadBillCalculation();
-        }
-      } else {
-        const error = await response.json();
-        toast.error(error.error || 'فشل في إضافة الخدمة');
-      }
-    } catch (error) {
-      console.error('Error adding shared service:', error);
-      toast.error('فشل في إضافة الخدمة');
-    } finally {
-      setAddingService(false);
-    }
-  };
-
-  const getServiceLabel = (type: SharedServiceType) => {
-    const labels = {
-      building_water: 'مياه السلم',
-      staircase_electricity: 'كهرباء السلم',
-      building_maintenance: 'صيانة المبنى',
-      general_cleaning: 'نظافة عامة',
-    };
-    return labels[type];
   };
 
   if (loading) {
@@ -340,6 +222,22 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                     />
                   </div>
 
+                  <div>
+                    <Label className="text-base font-semibold">الإيجار الشهري *</Label>
+                    <Input
+                      type="number"
+                      value={editedProperty?.rent.amount || 0}
+                      onChange={(e) => setEditedProperty({
+                        ...editedProperty!,
+                        rent: {
+                          ...editedProperty!.rent,
+                          amount: Number(e.target.value)
+                        }
+                      })}
+                      className="text-lg font-semibold"
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label>التأمين</Label>
@@ -398,6 +296,11 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                       <span className="text-gray-600">اسم الساكن:</span>
                       <span className="font-medium">{property.tenant.name}</span>
                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <span className="text-gray-700 font-medium">الإيجار الشهري:</span>
+                    <span className="text-2xl font-bold text-blue-600">{property.rent.amount} ج.م</span>
                   </div>
 
                   <div>
@@ -580,239 +483,6 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                       </div>
                     </div>
                   </div>
-
-                  <div className="border-t pt-3">
-                    <MonthlyUtilityDisplay
-                      propertyId={property.id}
-                      propertyName={property.name}
-                      month={selectedMonth}
-                      onUpdated={loadBillCalculation}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Section 3️⃣: متابعة الدفع والاستهلاك */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">3️⃣</span>
-                متابعة الدفع والاستهلاك
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editing ? (
-                <>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Checkbox
-                      id="readingsRecorded"
-                      checked={editedProperty?.readingsRecorded || false}
-                      onCheckedChange={(checked) => setEditedProperty({
-                        ...editedProperty!,
-                        readingsRecorded: checked as boolean
-                      })}
-                    />
-                    <Label htmlFor="readingsRecorded" className="cursor-pointer">
-                      سجلت قراءات شهر 1 و 6
-                    </Label>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>قيمة المياه</Label>
-                      <Input
-                        type="number"
-                        value={editedProperty?.utilities.waterAmount || 0}
-                        onChange={(e) => setEditedProperty({
-                          ...editedProperty!,
-                          utilities: {
-                            ...editedProperty!.utilities,
-                            waterAmount: Number(e.target.value)
-                          }
-                        })}
-                      />
-                    </div>
-                    <div className="flex items-center gap-3 pt-6">
-                      <Checkbox
-                        id="waterPaid"
-                        checked={editedProperty?.utilities.waterPaid || false}
-                        onCheckedChange={(checked) => setEditedProperty({
-                          ...editedProperty!,
-                          utilities: {
-                            ...editedProperty!.utilities,
-                            waterPaid: checked as boolean
-                          }
-                        })}
-                      />
-                      <Label htmlFor="waterPaid" className="cursor-pointer">المياه مدفوعة</Label>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>قيمة الكهرباء</Label>
-                      <Input
-                        type="number"
-                        value={editedProperty?.utilities.electricityAmount || 0}
-                        onChange={(e) => setEditedProperty({
-                          ...editedProperty!,
-                          utilities: {
-                            ...editedProperty!.utilities,
-                            electricityAmount: Number(e.target.value)
-                          }
-                        })}
-                      />
-                    </div>
-                    <div className="flex items-center gap-3 pt-6">
-                      <Checkbox
-                        id="electricityPaid"
-                        checked={editedProperty?.utilities.electricityPaid || false}
-                        onCheckedChange={(checked) => setEditedProperty({
-                          ...editedProperty!,
-                          utilities: {
-                            ...editedProperty!.utilities,
-                            electricityPaid: checked as boolean
-                          }
-                        })}
-                      />
-                      <Label htmlFor="electricityPaid" className="cursor-pointer">الكهرباء مدفوعة</Label>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Checkbox
-                      id="isOddMonth"
-                      checked={editedProperty?.isOddMonth || false}
-                      onCheckedChange={(checked) => setEditedProperty({
-                        ...editedProperty!,
-                        isOddMonth: checked as boolean
-                      })}
-                    />
-                    <Label htmlFor="isOddMonth" className="cursor-pointer">
-                      الشهر الحالي فردي (لقراءة المياه)
-                    </Label>
-                  </div>
-
-                  <div className="border-t pt-4 space-y-4">
-                    <h4 className="font-semibold text-gray-900">الإيجار</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label>الإيجار الشهري</Label>
-                        <Input
-                          type="number"
-                          value={editedProperty?.rent.amount || 0}
-                          onChange={(e) => setEditedProperty({
-                            ...editedProperty!,
-                            rent: {
-                              ...editedProperty!.rent,
-                              amount: Number(e.target.value)
-                            }
-                          })}
-                        />
-                      </div>
-                      <div>
-                        <Label>حالة الدفع</Label>
-                        <Select
-                          value={editedProperty?.rent.paymentStatus}
-                          onValueChange={(value: any) => setEditedProperty({
-                            ...editedProperty!,
-                            rent: {
-                              ...editedProperty!.rent,
-                              paymentStatus: value,
-                              paidAmount: value === 'paid' ? editedProperty!.rent.amount : 0
-                            }
-                          })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="paid">مدفوع</SelectItem>
-                            <SelectItem value="partial">مدفوع جزئياً</SelectItem>
-                            <SelectItem value="unpaid">غير مدفوع</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>المبلغ المدفوع</Label>
-                        <Input
-                          type="number"
-                          value={editedProperty?.rent.paidAmount || 0}
-                          onChange={(e) => setEditedProperty({
-                            ...editedProperty!,
-                            rent: {
-                              ...editedProperty!.rent,
-                              paidAmount: Number(e.target.value)
-                            }
-                          })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    {property.readingsRecorded ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
-                    )}
-                    <span>قراءات شهر 1 و 6: {property.readingsRecorded ? 'مسجلة' : 'غير مسجلة'}</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {property.utilities.waterAmount && property.utilities.waterAmount > 0 && (
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Droplet className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm">المياه</span>
-                          </div>
-                          <div className="text-left">
-                            <p className="font-semibold">{property.utilities.waterAmount} ج.م</p>
-                            <p className={`text-xs ${property.utilities.waterPaid ? 'text-green-600' : 'text-red-600'}`}>
-                              {property.utilities.waterPaid ? 'مدفوع' : 'غير مدفوع'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {property.utilities.electricityAmount && property.utilities.electricityAmount > 0 && (
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-yellow-600" />
-                            <span className="text-sm">الكهرباء</span>
-                          </div>
-                          <div className="text-left">
-                            <p className="font-semibold">{property.utilities.electricityAmount} ج.م</p>
-                            <p className={`text-xs ${property.utilities.electricityPaid ? 'text-green-600' : 'text-red-600'}`}>
-                              {property.utilities.electricityPaid ? 'مدفوع' : 'غير مدفوع'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Calendar className="h-4 w-4 text-gray-600" />
-                    <span>الشهر الحالي: {property.isOddMonth ? 'فردي' : 'زوجي'}</span>
-                  </div>
-
-                  <div className="border-t pt-4">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <PaymentStatusBadge
-                        status={property.rent.paymentStatus}
-                        amount={property.rent.amount}
-                        paidAmount={property.rent.paidAmount}
-                      />
-                    </div>
-                  </div>
                 </div>
               )}
             </CardContent>
@@ -901,17 +571,6 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                       })}
                     />
                   </div>
-
-                  <div>
-                    <Label>ملاحظات مهمة</Label>
-                    <Textarea
-                      value={editedProperty?.importantNotes || ''}
-                      onChange={(e) => setEditedProperty({
-                        ...editedProperty!,
-                        importantNotes: e.target.value
-                      })}
-                    />
-                  </div>
                 </>
               ) : (
                 <div className="space-y-4">
@@ -993,129 +652,8 @@ export default function PropertyDetailPage({ params }: { params: Promise<{ id: s
                       <p className="bg-gray-50 p-3 rounded">{property.notes.tenant}</p>
                     </div>
                   )}
-
-                  {property.importantNotes && (
-                    <div>
-                      <span className="text-gray-600 block mb-1">⚠️ ملاحظات مهمة:</span>
-                      <p className="bg-amber-50 p-3 rounded border border-amber-200">{property.importantNotes}</p>
-                    </div>
-                  )}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Section 5️⃣: 💰 حسابات شهرية */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">5️⃣</span>
-                  حسابات شهرية
-                </div>
-                <Input
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="w-auto"
-                  max-width="200px"
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingCalculation ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-gray-600">جاري التحميل...</div>
-                </div>
-              ) : billCalculation ? (
-                <BillBreakdown calculation={billCalculation} />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-gray-600">
-                  <p>لا توجد حسابات لهذا الشهر</p>
-                  <p className="text-sm mt-2">قم بإضافة خدمات مشتركة أولاً</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Section 6️⃣: إضافة خدمة مشتركة */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">6️⃣</span>
-                إضافة خدمة مشتركة
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleAddSharedService} className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  أضف خدمة مشتركة لهذا العقار (مياه السلم، كهرباء السلم، صيانة، نظافة)
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>نوع الخدمة *</Label>
-                    <Select
-                      value={serviceType}
-                      onValueChange={(value) => setServiceType(value as SharedServiceType)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر نوع الخدمة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="building_water">مياه السلم</SelectItem>
-                        <SelectItem value="staircase_electricity">كهرباء السلم</SelectItem>
-                        <SelectItem value="building_maintenance">صيانة المبنى</SelectItem>
-                        <SelectItem value="general_cleaning">نظافة عامة</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>الشهر *</Label>
-                    <Input
-                      type="month"
-                      value={serviceMonth}
-                      onChange={(e) => setServiceMonth(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label>المبلغ الإجمالي *</Label>
-                    <Input
-                      type="number"
-                      value={serviceAmount}
-                      onChange={(e) => setServiceAmount(e.target.value)}
-                      placeholder="أدخل المبلغ"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label>طريقة التقسيم *</Label>
-                    <Select
-                      value={splitMethod}
-                      onValueChange={(value) => setSplitMethod(value as SplitMethod)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر طريقة التقسيم" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="equal">تساوي بين كل الشقق</SelectItem>
-                        <SelectItem value="custom">نسبة مخصصة</SelectItem>
-                        <SelectItem value="by_rent_percentage">بالنسبة للإيجار</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={addingService}>
-                  {addingService ? 'جاري الإضافة...' : 'إضافة الخدمة'}
-                </Button>
-              </form>
             </CardContent>
           </Card>
         </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Check, Trash2, Loader2, Settings, ArrowRight, Plus } from 'lucide-react';
+import { Bell, Check, Trash2, Loader2, ArrowRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -150,8 +150,6 @@ export default function NotificationsPage() {
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'utility_bill_added':
-        return '💡';
       case 'payment_due_soon':
         return '⏰';
       case 'monthly_summary':
@@ -160,8 +158,6 @@ export default function NotificationsPage() {
         return '⚠️';
       case 'contract_expiring':
         return '📄';
-      case 'odd_month_water_reading':
-        return '💧';
       case 'manual':
         return '📢';
       default:
@@ -171,8 +167,6 @@ export default function NotificationsPage() {
 
   const getNotificationColor = (type: Notification['type']) => {
     switch (type) {
-      case 'utility_bill_added':
-        return 'border-blue-500 bg-blue-50';
       case 'payment_due_soon':
         return 'border-yellow-500 bg-yellow-50';
       case 'monthly_summary':
@@ -181,8 +175,6 @@ export default function NotificationsPage() {
         return 'border-red-500 bg-red-50';
       case 'contract_expiring':
         return 'border-orange-500 bg-orange-50';
-      case 'odd_month_water_reading':
-        return 'border-cyan-500 bg-cyan-50';
       case 'manual':
         return 'border-indigo-500 bg-indigo-50';
       default:
@@ -231,14 +223,6 @@ export default function NotificationsPage() {
               >
                 <Trash2 className="h-4 w-4 ml-2" />
                 مسح الكل
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push('/settings')}
-              >
-                <Settings className="h-4 w-4 ml-2" />
-                الإعدادات
               </Button>
             </div>
           </div>

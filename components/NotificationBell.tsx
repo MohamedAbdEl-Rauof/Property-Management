@@ -144,8 +144,6 @@ export function NotificationBell() {
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'utility_bill_added':
-        return '💡';
       case 'payment_due_soon':
         return '⏰';
       case 'monthly_summary':
@@ -154,8 +152,6 @@ export function NotificationBell() {
         return '⚠️';
       case 'contract_expiring':
         return '📄';
-      case 'odd_month_water_reading':
-        return '💧';
       default:
         return '🔔';
     }
@@ -163,8 +159,6 @@ export function NotificationBell() {
 
   const getNotificationColor = (type: Notification['type']) => {
     switch (type) {
-      case 'utility_bill_added':
-        return 'bg-blue-50 hover:bg-blue-100';
       case 'payment_due_soon':
         return 'bg-yellow-50 hover:bg-yellow-100';
       case 'monthly_summary':
@@ -173,8 +167,6 @@ export function NotificationBell() {
         return 'bg-red-50 hover:bg-red-100';
       case 'contract_expiring':
         return 'bg-orange-50 hover:bg-orange-100';
-      case 'odd_month_water_reading':
-        return 'bg-cyan-50 hover:bg-cyan-100';
       default:
         return 'bg-gray-50 hover:bg-gray-100';
     }

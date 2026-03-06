@@ -4,7 +4,6 @@ import {
   notifyPaymentOverdue,
   generateMonthlySummary,
   notifyContractExpiring,
-  checkOddMonthNotification,
 } from '@/lib/notifications';
 
 /**
@@ -37,8 +36,6 @@ export async function GET(request: NextRequest) {
         const overdue = await notifyPaymentOverdue();
         // Check for expiring contracts
         const expiring = await notifyContractExpiring();
-        // Check for odd month water readings
-        await checkOddMonthNotification(currentMonth);
 
         results.notificationsCreated =
           (dueSoon?.length || 0) +

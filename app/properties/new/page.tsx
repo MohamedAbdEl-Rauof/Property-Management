@@ -41,7 +41,6 @@ interface FormData {
   photoUrls: string;
   propertyNotes: string;
   tenantNotes: string;
-  importantNotes: string;
 }
 
 export default function NewPropertyPage() {
@@ -75,7 +74,6 @@ export default function NewPropertyPage() {
     photoUrls: '',
     propertyNotes: '',
     tenantNotes: '',
-    importantNotes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,7 +121,6 @@ export default function NewPropertyPage() {
         paymentStatus: formData.paymentStatus,
         paidAmount: formData.paidAmount,
       },
-      importantNotes: formData.importantNotes,
     };
 
     const res = await fetch('/api/properties', {
@@ -533,17 +530,6 @@ export default function NewPropertyPage() {
                   value={formData.tenantNotes}
                   onChange={(e) => setFormData({ ...formData, tenantNotes: e.target.value })}
                   placeholder="سلوك الساكن، أي ملاحظات..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="importantNotes">ملاحظات مهمة</Label>
-                <Textarea
-                  id="importantNotes"
-                  value={formData.importantNotes}
-                  onChange={(e) => setFormData({ ...formData, importantNotes: e.target.value })}
-                  placeholder="أي معلومات هامة تحتاج متابعة..."
                   rows={3}
                 />
               </div>

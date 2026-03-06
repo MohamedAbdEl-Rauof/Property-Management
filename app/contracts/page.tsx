@@ -1,9 +1,7 @@
 import { getProperties } from '@/lib/data';
 import { Navigation } from '@/components/Navigation';
-import { Property } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ContractAlert } from '@/components/ContractAlert';
 import { FileText, Phone, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
@@ -167,16 +165,6 @@ export default async function ContractsPage() {
                         }`}>
                           {daysLeft <= 0 ? 'انتهى العقد' : `${daysLeft} يوم متبقي`}
                         </div>
-
-                        {property.tenant.phones.length > 0 && (
-                          <div className="flex items-center gap-1 text-sm text-gray-600">
-                            <Phone className="h-3 w-3" />
-                            {property.tenant.phones[0]}
-                            {property.tenant.phones.length > 1 && (
-                              <span className="text-xs">(+{property.tenant.phones.length - 1})</span>
-                            )}
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
                   </Link>

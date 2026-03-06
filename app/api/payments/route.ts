@@ -5,7 +5,15 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const month = searchParams.get('month');
-    const payments = await getPayments(month || undefined);
+    const propertyId = searchParams.get('propertyId');
+
+    let payments = await getPayments(month || undefined);
+
+    // Filter by property ID if specified
+    if (propertyId) {
+      payments = payments.filter(p => p.propertyId === propertyId);
+    }
+
     return NextResponse.json(payments);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch payments' }, { status: 500 });
