@@ -1,0 +1,95 @@
+[
+  {
+    "id": "7-2026-03",
+    "propertyId": "7",
+    "propertyName": "شقة أبو ادم",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2500,
+      "paid": 0,
+      "remaining": 2500
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "services": {
+      "sharedWater": {
+        "amount": 0,
+        "paid": false
+      },
+      "sharedElectricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "repairs": []
+    },
+    "total": {
+      "rent": 2500,
+      "utilities": 0,
+      "services": 0,
+      "grandTotal": 2500,
+      "paid": 0,
+      "remaining": 2500
+    },
+    "createdAt": "2026-03-07T22:44:15.735Z",
+    "updatedAt": "2026-03-07T22:44:15.766Z"
+  },
+  {
+    "id": "9-2026-03",
+    "propertyId": "9",
+    "propertyName": "شقة عبدالحميد",
+    "month": "2026-03",
+    "rent": {
+      "amount": 6000,
+      "paid": 0,
+      "remaining": 6000
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "services": {
+      "sharedWater": {
+        "amount": 0,
+        "paid": false
+      },
+      "sharedElectricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "repairs": []
+    },
+    "total": {
+      "rent": 6000,
+      "utilities": 0,
+      "services": 0,
+      "grandTotal": 6000,
+      "paid": 0,
+      "remaining": 6000
+    },
+    "createdAt": "2026-03-07T22:44:15.765Z",
+    "updatedAt": "2026-03-07T22:44:15.799Z"
+  }
+] }
+]
