@@ -101,7 +101,73 @@ export type NotificationType =
   | 'monthly_summary'         // ملخص شهري
   | 'payment_overdue'         // فاتورة متأخرة
   | 'contract_expiring'       // عقد ينتهي قريباً
+  | 'utility_bill_added'      // فاتورة مرافق جديدة (كهرباء/غاز/مياه)
   | 'manual';                 // إشعار يدوي من الأدمن
+
+// ============================================================================
+// MONTHLY UTILITIES & BILL CALCULATIONS
+// ============================================================================
+
+export interface UtilityBill {
+  water: {
+    amount: number;
+    paid: boolean;
+    previousReading?: number;
+    currentReading?: number;
+  };
+  electricity: {
+    amount: number;
+    paid: boolean;
+    previousReading?: number;
+    currentReading?: number;
+  };
+  gas: {
+    amount: number;
+    paid: boolean;
+  };
+}
+
+export interface MonthlyUtility {
+  id: string;
+  propertyId: string;
+  month: string; // Format: "YYYY-MM"
+  utilities: UtilityBill;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PropertyBillCalculation {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  month: string; // Format: "YYYY-MM"
+  rent: {
+    amount: number;
+    paid: number;
+    remaining: number;
+  };
+  utilities: {
+    water: { amount: number; paid: boolean };
+    electricity: { amount: number; paid: boolean };
+    gas: { amount: number; paid: boolean };
+  };
+  services: {
+    sharedWater: { amount: number; paid: boolean };
+    sharedElectricity: { amount: number; paid: boolean };
+    repairs: { amount: number; paid: boolean; description?: string }[];
+  };
+  total: {
+    rent: number;
+    utilities: number;
+    services: number;
+    grandTotal: number;
+    paid: number;
+    remaining: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Notification {
   id: string;

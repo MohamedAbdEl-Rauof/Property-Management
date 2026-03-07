@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Property, PaymentRecord } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PaymentStatusBadge } from './PaymentStatus';
 import { ContractAlert } from './ContractAlert';
 import { Building2 } from 'lucide-react';
 
@@ -62,14 +61,6 @@ export function PropertyCard({ property, currentMonth }: PropertyCardProps) {
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">الإيجار الشهري:</span>
             <span className="font-semibold">{property.rent.amount} ج.م</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">حالة الدفع:</span>
-            <PaymentStatusBadge
-              status={paymentStatus}
-              amount={property.rent.amount}
-              paidAmount={paidAmount}
-            />
           </div>
 
           {/* Contract alert */}

@@ -144,6 +144,8 @@ export function NotificationBell() {
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
+      case 'utility_bill_added':
+        return '💡';
       case 'payment_due_soon':
         return '⏰';
       case 'monthly_summary':
@@ -159,6 +161,8 @@ export function NotificationBell() {
 
   const getNotificationColor = (type: Notification['type']) => {
     switch (type) {
+      case 'utility_bill_added':
+        return 'bg-blue-50 hover:bg-blue-100';
       case 'payment_due_soon':
         return 'bg-yellow-50 hover:bg-yellow-100';
       case 'monthly_summary':

@@ -150,6 +150,8 @@ export default function NotificationsPage() {
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
+      case 'utility_bill_added':
+        return '💡';
       case 'payment_due_soon':
         return '⏰';
       case 'monthly_summary':
@@ -167,6 +169,8 @@ export default function NotificationsPage() {
 
   const getNotificationColor = (type: Notification['type']) => {
     switch (type) {
+      case 'utility_bill_added':
+        return 'border-blue-500 bg-blue-50';
       case 'payment_due_soon':
         return 'border-yellow-500 bg-yellow-50';
       case 'monthly_summary':

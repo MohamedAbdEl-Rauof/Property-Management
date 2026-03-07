@@ -2,6 +2,34 @@ import { createNotification, getProperties } from './data';
 import { Notification } from './types';
 
 /**
+ * Notify when a monthly utility bill is added
+ */
+export async function notifyUtilityBillAdded(
+  propertyId: string,
+  propertyName: string,
+  month: string,
+  totalAmount: number
+): Promise<Notification | null> {
+  const property = await getProperties().then(props => props.find(p => p.id === propertyId));
+  if (!property) return null;
+
+  // Only send notification if total amount > 0
+  if (totalAmount > 0) {
+    return await createNotification({
+      type: 'utility_bill_added',
+      title: 'فاتورة شهرية جديدة',
+      message: `تم إضافة فواتير شهر ${month} لعقار ${propertyName} بمبلغ إجمالي ${totalAmount} ج.م`,
+      read: false,
+      link: `/properties/${propertyId}`,
+      propertyId,
+      property_name: propertyName,
+      amount: totalAmount,
+    });
+  }
+  return null;
+}
+
+/**
  * Notify about payments due soon
  */
 export async function notifyPaymentsDueSoon(): Promise<Notification[]> {

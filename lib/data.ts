@@ -1,11 +1,13 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Property, PaymentRecord, Notification } from './types';
+import { Property, PaymentRecord, Notification, MonthlyUtility, PropertyBillCalculation } from './types';
 
 const dataDir = path.join(process.cwd(), 'data');
 const propertiesFile = path.join(dataDir, 'properties.json');
 const paymentsFile = path.join(dataDir, 'payments.json');
 const notificationsFile = path.join(dataDir, 'notifications.json');
+const monthlyUtilitiesFile = path.join(dataDir, 'monthly-utilities.json');
+const billCalculationsFile = path.join(dataDir, 'bill-calculations.json');
 
 // Ensure data directory exists
 async function ensureDataDir() {
@@ -355,4 +357,102 @@ async function cleanupOldNotifications(): Promise<void> {
   if (filtered.length < notifications.length) {
     await saveNotifications(filtered);
   }
+}
+
+// ============================================================================
+// MONTHLY UTILITIES
+// ============================================================================
+
+export async function getAllMonthlyUtilities(): Promise<MonthlyUtility[]> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(monthlyUtilitiesFile, 'utf-8');
+    return JSON.parse(data) || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getMonthlyUtilities(propertyId: string, month?: string): Promise<MonthlyUtility[]> {
+  const utilities = await getAllMonthlyUtilities();
+  const filtered = utilities.filter((u: MonthlyUtility) => u.propertyId === propertyId);
+  if (month) {
+    return filtered.filter((u: MonthlyUtility) => u.month === month);
+  }
+  return filtered;
+}
+
+export async function getMonthlyUtility(propertyId: string, month: string): Promise<MonthlyUtility | null> {
+  const utilities = await getMonthlyUtilities(propertyId);
+  return utilities.find(u => u.month === month) || null;
+}
+
+export async function saveMonthlyUtility(utility: Omit<MonthlyUtility, 'id' | 'createdAt' | 'updatedAt'>): Promise<MonthlyUtility> {
+  const allUtilities = await getAllMonthlyUtilities();
+  const id = `${utility.propertyId}-${utility.month}`;
+  const now = new Date().toISOString();
+
+  const newUtility: MonthlyUtility = {
+    ...utility,
+    id,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const existingIndex = allUtilities.findIndex(u => u.id === id);
+  if (existingIndex >= 0) {
+    allUtilities[existingIndex] = { ...allUtilities[existingIndex], ...newUtility, createdAt: allUtilities[existingIndex].createdAt };
+  } else {
+    allUtilities.push(newUtility);
+  }
+
+  await saveMonthlyUtilities(allUtilities);
+  return newUtility;
+}
+
+async function saveMonthlyUtilities(utilities: MonthlyUtility[]): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(monthlyUtilitiesFile, JSON.stringify(utilities, null, 2), 'utf-8');
+}
+
+// ============================================================================
+// BILL CALCULATIONS
+// ============================================================================
+
+export async function getBillCalculations(month?: string): Promise<PropertyBillCalculation[]> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(billCalculationsFile, 'utf-8');
+    const calculations = JSON.parse(data) || [];
+    if (month) {
+      return calculations.filter((c: PropertyBillCalculation) => c.month === month);
+    }
+    return calculations;
+  } catch {
+    return [];
+  }
+}
+
+export async function getPropertyBillCalculation(propertyId: string, month: string): Promise<PropertyBillCalculation | null> {
+  const calculations = await getBillCalculations();
+  return calculations.find(c => c.propertyId === propertyId && c.month === month) || null;
+}
+
+export async function saveBillCalculation(calculation: PropertyBillCalculation): Promise<PropertyBillCalculation> {
+  const calculations = await getBillCalculations();
+  const index = calculations.findIndex(c => c.propertyId === calculation.propertyId && c.month === calculation.month);
+
+  if (index >= 0) {
+    calculations[index] = { ...calculation, updatedAt: new Date().toISOString() };
+  } else {
+    calculations.push({ ...calculation, updatedAt: new Date().toISOString() });
+  }
+
+  await saveBillCalculations(calculations);
+  return calculation;
+}
+
+async function saveBillCalculations(calculations: PropertyBillCalculation[]): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(billCalculationsFile, JSON.stringify(calculations, null, 2), 'utf-8');
 }
