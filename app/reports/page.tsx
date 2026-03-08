@@ -3,22 +3,23 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { MonthlyReport } from '@/components/reports/MonthlyReport';
+import { UtilityEntryDialog } from '@/components/reports/UtilityEntryDialog';
+import { ServicesCalculatorDialog } from '@/components/reports/ServicesCalculatorDialog';
 import { Property, PropertyBillCalculation } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Loader2, Download } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function ReportsPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [calculations, setCalculations] = useState<PropertyBillCalculation[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
-  }, [selectedMonth]);
+  }, []);
 
   // Refresh data when page regains focus (user returns from Payments page)
   useEffect(() => {
@@ -32,53 +33,25 @@ export default function ReportsPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [selectedMonth]);
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [propsRes] = await Promise.all([
+      const [propsRes, calcsRes] = await Promise.all([
         fetch('/api/properties'),
+        fetch('/api/bill-calculations'),
       ]);
 
-      if (propsRes.ok) {
+      if (propsRes.ok && calcsRes.ok) {
         const props = await propsRes.json();
+        const allCalcs = await calcsRes.json();
+
         setProperties(props);
-
-        // Get calculations for each property
-        const calcsPromises = props.map(async (property: Property) => {
-          const response = await fetch(`/api/bill-calculations/${property.id}/${selectedMonth}`);
-          if (response.ok) {
-            return await response.json();
-          }
-          return null;
-        });
-
-        const calcsResults = await Promise.all(calcsPromises);
-        setCalculations(calcsResults.filter(c => c !== null));
+        setCalculations(allCalcs);
       }
     } catch (error) {
       console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRecalculate = async () => {
-    setLoading(true);
-    try {
-      // Trigger recalculation for all properties
-      const promises = properties.map(async (property) => {
-        const response = await fetch(`/api/bill-calculations/${property.id}/${selectedMonth}`, {
-          method: 'POST',
-        });
-        return response.ok;
-      });
-
-      await Promise.all(promises);
-      await loadData();
-    } catch (error) {
-      console.error('Error recalculating:', error);
     } finally {
       setLoading(false);
     }
@@ -110,27 +83,18 @@ export default function ReportsPage() {
         {/* Controls */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Label htmlFor="month">اختر الشهر:</Label>
-                <Input
-                  id="month"
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="w-auto"
-                />
+            <div className="space-y-4">
+              {/* Dialog Buttons */}
+              <div className="flex gap-2">
+                <UtilityEntryDialog properties={properties} onSuccess={loadData} />
+                <ServicesCalculatorDialog onSuccess={loadData} />
               </div>
-              <Button onClick={handleRecalculate} variant="outline">
-                <Download className="ml-2 h-4 w-4" />
-                إعادة الحساب
-              </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Report */}
-        <MonthlyReport calculations={calculations} properties={properties} />
+        <MonthlyReport calculations={calculations} properties={properties} loadData={loadData} />
       </main>
     </div>
   );

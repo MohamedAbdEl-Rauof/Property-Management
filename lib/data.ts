@@ -410,6 +410,37 @@ export async function saveMonthlyUtility(utility: Omit<MonthlyUtility, 'id' | 'c
   return newUtility;
 }
 
+export async function updateMonthlyUtility(
+  propertyId: string,
+  month: string,
+  updates: Partial<MonthlyUtility>
+): Promise<MonthlyUtility | null> {
+  const allUtilities = await getAllMonthlyUtilities();
+  const id = `${propertyId}-${month}`;
+  const index = allUtilities.findIndex(u => u.id === id);
+
+  if (index === -1) return null;
+
+  const existing = allUtilities[index];
+  const updated: MonthlyUtility = {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Deep merge utilities if provided - don't replace entire object
+  if (updates.utilities && existing.utilities) {
+    updated.utilities = {
+      ...existing.utilities,
+      ...updates.utilities,
+    };
+  }
+
+  allUtilities[index] = updated;
+  await saveMonthlyUtilities(allUtilities);
+  return allUtilities[index];
+}
+
 async function saveMonthlyUtilities(utilities: MonthlyUtility[]): Promise<void> {
   await ensureDataDir();
   await fs.writeFile(monthlyUtilitiesFile, JSON.stringify(utilities, null, 2), 'utf-8');
@@ -449,6 +480,92 @@ export async function saveBillCalculation(calculation: PropertyBillCalculation):
   }
 
   await saveBillCalculations(calculations);
+  return calculation;
+}
+
+export async function calculateBillForProperty(
+  propertyId: string,
+  month: string
+): Promise<PropertyBillCalculation> {
+  // Get existing calculation (to preserve services)
+  const existingCalc = await getPropertyBillCalculation(propertyId, month);
+
+  // Get property details
+  const properties = await getProperties();
+  const property = properties.find(p => p.id === propertyId);
+  if (!property) {
+    throw new Error(`Property ${propertyId} not found`);
+  }
+
+  // Get monthly utilities (ALWAYS - to get latest data)
+  const utilities = await getMonthlyUtilities(propertyId, month);
+  const utilityData = utilities[0];
+
+  // Fetch actual payment data from Payments page
+  const paymentRecord = await getPropertyPaymentForMonth(propertyId, month);
+
+  // Calculate rent using actual payment data
+  const rentAmount = property.rent.amount;
+  const rentPaid = paymentRecord?.rent.paid || 0;
+  const rentRemaining = rentAmount - rentPaid;
+
+  // Calculate utilities from LATEST utility data
+  let utilitiesTotal = 0;
+  let waterAmount = 0;
+  let electricityAmount = 0;
+  let gasAmount = 0;
+
+  if (utilityData?.utilities) {
+    waterAmount = utilityData.utilities.water?.amount || 0;
+    electricityAmount = utilityData.utilities.electricity?.amount || 0;
+    gasAmount = utilityData.utilities.gas?.amount || 0;
+    utilitiesTotal = waterAmount + electricityAmount + gasAmount;
+  }
+
+  // Preserve existing services
+  const existingServices = existingCalc?.services || {
+    sharedWater: { amount: 0, paid: false },
+    sharedElectricity: { amount: 0, paid: false },
+    repairs: [] as Array<{ amount: number; paid: boolean; description?: string }>,
+  };
+
+  const servicesTotal = (existingServices.sharedWater.amount || 0) +
+                       (existingServices.sharedElectricity.amount || 0) +
+                       existingServices.repairs.reduce((sum, r) => sum + r.amount, 0);
+
+  const grandTotal = rentAmount + utilitiesTotal + servicesTotal;
+
+  const calculation: PropertyBillCalculation = {
+    id: `${propertyId}-${month}`,
+    propertyId,
+    propertyName: property.name,
+    month,
+    rent: {
+      amount: rentAmount,
+      paid: rentPaid,
+      remaining: rentRemaining,
+    },
+    utilities: {
+      water: { amount: waterAmount, paid: utilityData?.utilities.water?.paid || false },
+      electricity: { amount: electricityAmount, paid: utilityData?.utilities.electricity?.paid || false },
+      gas: { amount: gasAmount, paid: utilityData?.utilities.gas?.paid || false },
+    },
+    services: existingServices,
+    total: {
+      rent: rentAmount,
+      utilities: utilitiesTotal,
+      services: servicesTotal,
+      grandTotal,
+      paid: rentPaid,
+      remaining: grandTotal - rentPaid,
+    },
+    createdAt: existingCalc?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Save calculation
+  await saveBillCalculation(calculation);
+
   return calculation;
 }
 

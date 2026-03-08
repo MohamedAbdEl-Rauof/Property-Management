@@ -1,5 +1,189 @@
 [
   {
+    "id": "8-2026-03",
+    "propertyId": "8",
+    "propertyName": "شقة علاء العطار",
+    "month": "2026-03",
+    "rent": {
+      "amount": 3000,
+      "paid": 0,
+      "remaining": 3000
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "services": {
+      "sharedWater": {
+        "amount": 350,
+        "paid": false
+      },
+      "sharedElectricity": {
+        "amount": 2.8,
+        "paid": false
+      },
+      "repairs": []
+    },
+    "total": {
+      "rent": 3000,
+      "utilities": 0,
+      "services": 352.8,
+      "grandTotal": 3352.8,
+      "paid": 0,
+      "remaining": 3352.8
+    },
+    "createdAt": "2026-03-08T12:25:14.768Z",
+    "updatedAt": "2026-03-08T12:28:47.327Z"
+  },
+  {
+    "id": "4-2026-03",
+    "propertyId": "4",
+    "propertyName": "شقة أم ذياد",
+    "month": "2026-03",
+    "rent": {
+      "amount": 3000,
+      "paid": 0,
+      "remaining": 3000
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "services": {
+      "sharedWater": {
+        "amount": 350,
+        "paid": false
+      },
+      "sharedElectricity": {
+        "amount": 2.8,
+        "paid": false
+      },
+      "repairs": []
+    },
+    "total": {
+      "rent": 3000,
+      "utilities": 0,
+      "services": 352.8,
+      "grandTotal": 3352.8,
+      "paid": 0,
+      "remaining": 3352.8
+    },
+    "createdAt": "2026-03-08T12:28:47.053Z",
+    "updatedAt": "2026-03-08T12:34:30.473Z"
+  },
+  {
+    "id": "5-2026-03",
+    "propertyId": "5",
+    "propertyName": "شقة أبو مصطفي",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2750,
+      "paid": 0,
+      "remaining": 2750
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "services": {
+      "sharedWater": {
+        "amount": 350,
+        "paid": false
+      },
+      "sharedElectricity": {
+        "amount": 2.8,
+        "paid": false
+      },
+      "repairs": []
+    },
+    "total": {
+      "rent": 2750,
+      "utilities": 0,
+      "services": 352.8,
+      "grandTotal": 3102.8,
+      "paid": 0,
+      "remaining": 3102.8
+    },
+    "createdAt": "2026-03-08T12:28:47.108Z",
+    "updatedAt": "2026-03-08T12:28:47.136Z"
+  },
+  {
+    "id": "6-2026-03",
+    "propertyId": "6",
+    "propertyName": "شقة أم سيف",
+    "month": "2026-03",
+    "rent": {
+      "amount": 2600,
+      "paid": 0,
+      "remaining": 2600
+    },
+    "utilities": {
+      "water": {
+        "amount": 0,
+        "paid": false
+      },
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "services": {
+      "sharedWater": {
+        "amount": 584.5,
+        "paid": false
+      },
+      "sharedElectricity": {
+        "amount": 2.8,
+        "paid": false
+      },
+      "repairs": []
+    },
+    "total": {
+      "rent": 2600,
+      "utilities": 0,
+      "services": 587.3,
+      "grandTotal": 3187.3,
+      "paid": 0,
+      "remaining": 3187.3
+    },
+    "createdAt": "2026-03-08T12:28:47.161Z",
+    "updatedAt": "2026-03-08T12:28:47.193Z"
+  },
+  {
     "id": "7-2026-03",
     "propertyId": "7",
     "propertyName": "شقة أبو ادم",
@@ -25,11 +209,11 @@
     },
     "services": {
       "sharedWater": {
-        "amount": 0,
+        "amount": 584.5,
         "paid": false
       },
       "sharedElectricity": {
-        "amount": 0,
+        "amount": 2.8,
         "paid": false
       },
       "repairs": []
@@ -37,23 +221,23 @@
     "total": {
       "rent": 2500,
       "utilities": 0,
-      "services": 0,
-      "grandTotal": 2500,
+      "services": 587.3,
+      "grandTotal": 3087.3,
       "paid": 0,
-      "remaining": 2500
+      "remaining": 3087.3
     },
-    "createdAt": "2026-03-07T22:44:15.735Z",
-    "updatedAt": "2026-03-07T22:44:15.766Z"
+    "createdAt": "2026-03-08T12:28:47.228Z",
+    "updatedAt": "2026-03-08T12:28:47.284Z"
   },
   {
-    "id": "9-2026-03",
-    "propertyId": "9",
-    "propertyName": "شقة عبدالحميد",
-    "month": "2026-03",
+    "id": "4-2026-02",
+    "propertyId": "4",
+    "propertyName": "شقة أم ذياد",
+    "month": "2026-02",
     "rent": {
-      "amount": 6000,
+      "amount": 3000,
       "paid": 0,
-      "remaining": 6000
+      "remaining": 3000
     },
     "utilities": {
       "water": {
@@ -81,15 +265,14 @@
       "repairs": []
     },
     "total": {
-      "rent": 6000,
+      "rent": 3000,
       "utilities": 0,
       "services": 0,
-      "grandTotal": 6000,
+      "grandTotal": 3000,
       "paid": 0,
-      "remaining": 6000
+      "remaining": 3000
     },
-    "createdAt": "2026-03-07T22:44:15.765Z",
-    "updatedAt": "2026-03-07T22:44:15.799Z"
+    "createdAt": "2026-03-08T12:29:41.493Z",
+    "updatedAt": "2026-03-08T12:35:18.523Z"
   }
-] }
 ]

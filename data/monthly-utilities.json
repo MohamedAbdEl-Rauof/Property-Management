@@ -1,0 +1,46 @@
+[
+  {
+    "propertyId": "4",
+    "month": "2026-03",
+    "utilities": {
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      },
+      "water": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "totalAmount": 33,
+    "id": "4-2026-03",
+    "createdAt": "2026-03-08T12:29:24.437Z",
+    "updatedAt": "2026-03-08T12:34:30.415Z"
+  },
+  {
+    "propertyId": "4",
+    "month": "2026-02",
+    "utilities": {
+      "electricity": {
+        "amount": 0,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      },
+      "water": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "totalAmount": 2222222222,
+    "id": "4-2026-02",
+    "createdAt": "2026-03-08T12:29:41.485Z",
+    "updatedAt": "2026-03-08T12:35:18.458Z"
+  }
+]
