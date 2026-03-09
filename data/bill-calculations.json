@@ -245,7 +245,7 @@
         "paid": false
       },
       "electricity": {
-        "amount": 0,
+        "amount": 220,
         "paid": false
       },
       "gas": {
@@ -266,13 +266,13 @@
     },
     "total": {
       "rent": 3000,
-      "utilities": 0,
+      "utilities": 220,
       "services": 0,
-      "grandTotal": 3000,
+      "grandTotal": 3220,
       "paid": 0,
-      "remaining": 3000
+      "remaining": 3220
     },
     "createdAt": "2026-03-08T12:29:41.493Z",
-    "updatedAt": "2026-03-08T12:35:18.523Z"
+    "updatedAt": "2026-03-09T11:39:00.312Z"
   }
 ]

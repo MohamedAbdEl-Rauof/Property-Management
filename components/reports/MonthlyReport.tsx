@@ -235,8 +235,8 @@ export function MonthlyReport({ calculations, properties, loadData }: MonthlyRep
 
                       {/* Utilities Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {/* Services Section - only for flats */}
-                        {!isStore && (
+                        {/* Services Section - only for flats and if has services */}
+                        {!isStore && totalServices > 0 && (
                           <div className="flex flex-col p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                               <Droplet className="h-4 w-4 text-blue-600" />
@@ -337,8 +337,9 @@ export function MonthlyReport({ calculations, properties, loadData }: MonthlyRep
                           </div>
                         )}
 
-                        {/* Electricity - always show */}
-                        <div className="flex items-center justify-between gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
+                        {/* Electricity - only show if amount > 0 */}
+                        {calc.utilities.electricity.amount > 0 && (
+                          <div className="flex items-center justify-between gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
                           <div className="flex items-center gap-2 flex-1">
                             <Zap className="h-4 w-4 text-yellow-600" />
                             <span className="text-sm">الكهرباء</span>
@@ -374,9 +375,10 @@ export function MonthlyReport({ calculations, properties, loadData }: MonthlyRep
                             </div>
                           </div>
                         </div>
+                        )}
 
-                        {/* Gas - only for flats */}
-                        {!isStore && (
+                        {/* Gas - only for flats and if amount > 0 */}
+                        {!isStore && calc.utilities.gas.amount > 0 && (
                           <div className="flex items-center justify-between gap-2 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
                             <div className="flex items-center gap-2 flex-1">
                               <Flame className="h-4 w-4 text-orange-600" />

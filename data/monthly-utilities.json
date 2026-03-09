@@ -26,7 +26,7 @@
     "month": "2026-02",
     "utilities": {
       "electricity": {
-        "amount": 0,
+        "amount": 220,
         "paid": false
       },
       "gas": {
@@ -38,9 +38,9 @@
         "paid": false
       }
     },
-    "totalAmount": 2222222222,
+    "totalAmount": 220,
     "id": "4-2026-02",
     "createdAt": "2026-03-08T12:29:41.485Z",
-    "updatedAt": "2026-03-08T12:35:18.458Z"
+    "updatedAt": "2026-03-09T11:39:00.298Z"
   }
 ]

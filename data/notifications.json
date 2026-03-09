@@ -2,62 +2,14 @@
   {
     "type": "utility_bill_added",
     "title": "فاتورة شهرية جديدة",
-    "message": "تم إضافة فواتير شهر 2026-02 لعقار شقة أم ذياد بمبلغ إجمالي 2222222222 ج.م",
+    "message": "تم إضافة فواتير شهر 2026-02 لعقار شقة أم ذياد بمبلغ إجمالي 220 ج.م",
     "read": false,
     "link": "/properties/4",
     "propertyId": "4",
     "property_name": "شقة أم ذياد",
-    "amount": 2222222222,
-    "id": "1772973314491",
-    "createdAt": "2026-03-08T12:35:14.491Z"
-  },
-  {
-    "type": "utility_bill_added",
-    "title": "فاتورة شهرية جديدة",
-    "message": "تم إضافة فواتير شهر 2026-02 لعقار شقة أم ذياد بمبلغ إجمالي 333 ج.م",
-    "read": false,
-    "link": "/properties/4",
-    "propertyId": "4",
-    "property_name": "شقة أم ذياد",
-    "amount": 333,
-    "id": "1772973288830",
-    "createdAt": "2026-03-08T12:34:48.830Z"
-  },
-  {
-    "type": "utility_bill_added",
-    "title": "فاتورة شهرية جديدة",
-    "message": "تم إضافة فواتير شهر 2026-03 لعقار شقة أم ذياد بمبلغ إجمالي 33 ج.م",
-    "read": false,
-    "link": "/properties/4",
-    "propertyId": "4",
-    "property_name": "شقة أم ذياد",
-    "amount": 33,
-    "id": "1772973248430",
-    "createdAt": "2026-03-08T12:34:08.430Z"
-  },
-  {
-    "type": "utility_bill_added",
-    "title": "فاتورة شهرية جديدة",
-    "message": "تم إضافة فواتير شهر 2026-03 لعقار شقة أم ذياد بمبلغ إجمالي 33333 ج.م",
-    "read": false,
-    "link": "/properties/4",
-    "propertyId": "4",
-    "property_name": "شقة أم ذياد",
-    "amount": 33333,
-    "id": "1772973083813",
-    "createdAt": "2026-03-08T12:31:23.813Z"
-  },
-  {
-    "type": "utility_bill_added",
-    "title": "فاتورة شهرية جديدة",
-    "message": "تم إضافة فواتير شهر 2026-03 لعقار شقة أم ذياد بمبلغ إجمالي 62221 ج.م",
-    "read": false,
-    "link": "/properties/4",
-    "propertyId": "4",
-    "property_name": "شقة أم ذياد",
-    "amount": 62221,
-    "id": "1772973062149",
-    "createdAt": "2026-03-08T12:31:02.149Z"
+    "amount": 220,
+    "id": "1773056340318",
+    "createdAt": "2026-03-09T11:39:00.318Z"
   },
   {
     "type": "utility_bill_added",
