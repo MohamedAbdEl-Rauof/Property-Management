@@ -1,140 +1,126 @@
-import { createNotification, getProperties } from './data';
+import { createNotification, getProperties, getBillCalculations } from './data';
 import { Notification } from './types';
 
 /**
- * Notify when a monthly utility bill is added
+ * 1. Meter Reading Reminder (January 1 & June 1)
+ * "يلا يا مسؤول عايزينك تحط قراءات العداد لكل الشقق الموجودة"
  */
-export async function notifyUtilityBillAdded(
-  propertyId: string,
-  propertyName: string,
-  month: string,
-  totalAmount: number
-): Promise<Notification | null> {
-  const property = await getProperties().then(props => props.find(p => p.id === propertyId));
-  if (!property) return null;
-
-  // Only send notification if total amount > 0
-  if (totalAmount > 0) {
-    return await createNotification({
-      type: 'utility_bill_added',
-      title: 'فاتورة شهرية جديدة',
-      message: `تم إضافة فواتير شهر ${month} لعقار ${propertyName} بمبلغ إجمالي ${totalAmount} ج.م`,
-      read: false,
-      link: `/properties/${propertyId}`,
-      propertyId,
-      property_name: propertyName,
-      amount: totalAmount,
-    });
-  }
-  return null;
-}
-
-/**
- * Notify about payments due soon
- */
-export async function notifyPaymentsDueSoon(): Promise<Notification[]> {
+export async function notifyMeterReadingRequired(): Promise<Notification | null> {
   const properties = await getProperties();
-  const notifications: Notification[] = [];
-
-  for (const property of properties) {
-    // Check if property has unpaid bills
-    // This is a simplified check - you can enhance it based on your business logic
-    const hasUnpaidBills = property.rent.paymentStatus !== 'paid';
-
-    if (hasUnpaidBills) {
-      const notification = await createNotification({
-        type: 'payment_due_soon',
-        title: 'فاتورة تستحق قريباً',
-        message: `عقار ${property.name} - فواتير غير مدفوعة، يرجى التحقق`,
-        read: false,
-        link: `/properties/${property.id}`,
-        propertyId: property.id,
-        property_name: property.name,
-      });
-      if (notification) notifications.push(notification);
-    }
-  }
-
-  return notifications;
-}
-
-/**
- * Notify about overdue payments
- */
-export async function notifyPaymentOverdue(): Promise<Notification[]> {
-  const properties = await getProperties();
-  const notifications: Notification[] = [];
-
-  for (const property of properties) {
-    if (property.rent.paymentStatus === 'unpaid' || property.rent.paymentStatus === 'partial') {
-      const notification = await createNotification({
-        type: 'payment_overdue',
-        title: 'فاتورة متأخرة',
-        message: `عقار ${property.name} - فواتير متأخرة ولم يتم سدادها`,
-        read: false,
-        link: `/properties/${property.id}`,
-        propertyId: property.id,
-        property_name: property.name,
-      });
-      if (notification) notifications.push(notification);
-    }
-  }
-
-  return notifications;
-}
-
-/**
- * Generate monthly summary of unpaid bills
- */
-export async function generateMonthlySummary(month: string): Promise<Notification | null> {
-  const properties = await getProperties();
-  let unpaidCount = 0;
-  let totalUnpaid = 0;
-
-  for (const property of properties) {
-    if (property.rent.paymentStatus !== 'paid') {
-      unpaidCount++;
-      totalUnpaid += property.rent.amount - (property.rent.paidAmount || 0);
-    }
-  }
-
-  if (unpaidCount === 0) return null;
+  const message = `يرجى إدخال قراءات العداد لجميع الشقق والمخازن (${properties.length})`;
 
   return await createNotification({
-    type: 'monthly_summary',
-    title: `ملخص شهر ${month}`,
-    message: `يوجد ${unpaidCount} عقار لديهم فواتير غير مدفوعة بإجمالي ${totalUnpaid.toFixed(2)} ج.م`,
-    read: false,
-    link: '/notifications',
+    type: 'manual',
+    title: 'قراءات العداد نصف سنوية',
+    message,
+    status: 'pending',
   });
 }
 
 /**
- * Notify about expiring contracts
+ * 2. Water Reader Contact (Odd months: 1,3,5,7,9,11 on the 1st)
+ * "بلغني اني اتواصل مع محصل المياه"
  */
-export async function notifyContractExpiring(): Promise<Notification[]> {
+export async function notifyWaterReaderContact(): Promise<Notification | null> {
+  const currentMonth = new Date().getMonth() + 1; // 1-12
+
+  // Only notify in odd months
+  if (currentMonth % 2 === 1) {
+    return await createNotification({
+      type: 'manual',
+      title: 'التواصل مع قارئ العداد',
+      message: 'يرجى التواصل مع محصل المياه للتأكد من أخذ قراءات العدادات',
+      status: 'pending',
+    });
+  }
+
+  return null;
+}
+
+/**
+ * 3. Bill Entry Reminder (1st of every month)
+ * "حط قيم الفواتير بتاعت الفواتير كل الشقق"
+ */
+export async function notifyBillEntryRequired(): Promise<Notification | null> {
+  const properties = await getProperties();
+  const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const message = `يرجى إدخال قيم الفواتير لشهر ${currentMonth} لجميع الشقق والمخازن`;
+
+  return await createNotification({
+    type: 'manual',
+    title: 'إدخال الفواتير الشهرية',
+    message,
+    status: 'pending',
+  });
+}
+
+/**
+ * 4. Lease Expiry Warning (30 days before contract ends)
+ * If lease ends in April, notify in March
+ */
+export async function notifyLeaseExpiringSoon(): Promise<Notification[]> {
   const properties = await getProperties();
   const notifications: Notification[] = [];
   const today = new Date();
 
   for (const property of properties) {
-    const contractEnd = new Date(`${today.getFullYear()}-${property.tenant.contractEnd}`);
-    const daysUntilExpiry = Math.floor((contractEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (!property.tenant?.contractEnd) continue;
 
+    const [month, day] = property.tenant.contractEnd.split('-').map(Number);
+
+    // Create date for this year's contract end
+    const contractEndDate = new Date(today.getFullYear(), month - 1, day);
+
+    // If contract end has passed this year, check next year
+    if (contractEndDate < today) {
+      contractEndDate.setFullYear(today.getFullYear() + 1);
+    }
+
+    const daysUntilExpiry = Math.floor((contractEndDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Only notify if within 30 days
     if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) {
       const notification = await createNotification({
-        type: 'contract_expiring',
-        title: 'عقد ينتهي قريباً',
-        message: `عقار ${property.name} - العقد ينتهي خلال ${daysUntilExpiry} يوم`,
-        read: false,
-        link: `/properties/${property.id}`,
-        propertyId: property.id,
-        property_name: property.name,
-        dueDate: contractEnd.toISOString(),
+        type: 'manual',
+        title: 'عقد إيجار ينتهي قريباً',
+        message: `شقة ${property.name} - ينتهي العقد في ${property.tenant.contractEnd}`,
+        status: 'pending',
       });
       if (notification) notifications.push(notification);
     }
   }
 
   return notifications;
+}
+
+/**
+ * 5. Friday Payment Follow-up (Every Friday)
+ * "تابع حد من الي عليه فواتير دفعها ولا لسه"
+ */
+export async function notifyFridayPaymentFollowup(): Promise<Notification | null> {
+  const calculations = await getBillCalculations();
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 5 = Friday
+
+  // Only run on Friday
+  if (dayOfWeek !== 5) return null;
+
+  // Find unpaid bills older than 7 days
+  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const unpaidBills = calculations.filter(c =>
+    c.total.paid < c.total.grandTotal &&
+    new Date(c.createdAt) < sevenDaysAgo
+  );
+
+  if (unpaidBills.length === 0) return null;
+
+  // Calculate total unpaid amount
+  const totalAmount = unpaidBills.reduce((sum, c) => sum + c.total.remaining, 0);
+
+  return await createNotification({
+    type: 'manual',
+    title: 'متابعة المدفوعات الأسبوعية',
+    message: `${unpaidBills.length} فواتير غير مدفوعة - الإجمالي: ${totalAmount.toFixed(2)} ج.م`,
+    status: 'pending',
+  });
 }

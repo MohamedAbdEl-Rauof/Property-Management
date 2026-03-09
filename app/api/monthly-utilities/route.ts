@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllMonthlyUtilities, saveMonthlyUtility, calculateBillForProperty } from '@/lib/data';
-import { notifyUtilityBillAdded } from '@/lib/notifications';
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,11 +48,6 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('Failed to calculate bill:', error);
       // Don't fail the request - utility was saved successfully
-    }
-
-    // Send notification
-    if (property) {
-      await notifyUtilityBillAdded(propertyId, property.name, month, totalAmount);
     }
 
     return NextResponse.json(saved);

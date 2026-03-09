@@ -252,9 +252,9 @@ export async function getNotifications(limit?: number, unreadOnly?: boolean): Pr
   // Sort by creation date (newest first)
   notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  // Filter by unread status if requested
+  // Filter by unread/pending status if requested
   if (unreadOnly) {
-    notifications = notifications.filter(n => !n.read);
+    notifications = notifications.filter(n => n.status === 'pending');
   }
 
   // Limit results if specified
@@ -316,14 +316,44 @@ export async function markNotificationAsRead(id: string): Promise<Notification |
 
   if (index === -1) return null;
 
+  notifications[index].status = 'done';
+  notifications[index].updatedAt = new Date().toISOString();
+  await saveNotifications(notifications);
+  return notifications[index];
+}
+
+export async function markNotificationAsDone(id: string): Promise<Notification | null> {
+  const notifications = await getAllNotifications();
+  const index = notifications.findIndex(n => n.id === id);
+
+  if (index === -1) return null;
+
+  notifications[index].status = 'done';
   notifications[index].read = true;
+  notifications[index].updatedAt = new Date().toISOString();
+  await saveNotifications(notifications);
+  return notifications[index];
+}
+
+export async function markNotificationAsPending(id: string): Promise<Notification | null> {
+  const notifications = await getAllNotifications();
+  const index = notifications.findIndex(n => n.id === id);
+
+  if (index === -1) return null;
+
+  notifications[index].status = 'pending';
+  notifications[index].read = false;
+  notifications[index].updatedAt = new Date().toISOString();
   await saveNotifications(notifications);
   return notifications[index];
 }
 
 export async function markAllNotificationsAsRead(): Promise<void> {
   const notifications = await getAllNotifications();
-  notifications.forEach(n => n.read = true);
+  notifications.forEach(n => {
+    n.status = 'done';
+    n.updatedAt = new Date().toISOString();
+  });
   await saveNotifications(notifications);
 }
 

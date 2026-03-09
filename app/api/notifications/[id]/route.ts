@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getNotification,
   markNotificationAsRead,
+  markNotificationAsDone,
+  markNotificationAsPending,
   deleteNotification,
 } from '@/lib/data';
 
@@ -14,8 +16,19 @@ export async function PATCH(
     const body = await request.json();
     const { action } = body;
 
-    if (action === 'markRead') {
-      const notification = await markNotificationAsRead(id);
+    if (action === 'markRead' || action === 'markDone') {
+      const notification = await markNotificationAsDone(id);
+      if (!notification) {
+        return NextResponse.json(
+          { error: 'الإشعار غير موجود' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(notification);
+    }
+
+    if (action === 'markPending') {
+      const notification = await markNotificationAsPending(id);
       if (!notification) {
         return NextResponse.json(
           { error: 'الإشعار غير موجود' },

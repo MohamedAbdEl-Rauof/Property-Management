@@ -1,66 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  notifyPaymentsDueSoon,
-  notifyPaymentOverdue,
-  generateMonthlySummary,
-  notifyContractExpiring,
+  notifyMeterReadingRequired,
+  notifyWaterReaderContact,
+  notifyBillEntryRequired,
+  notifyFridayPaymentFollowup,
+  notifyLeaseExpiringSoon,
 } from '@/lib/notifications';
 
 /**
  * Cron job endpoint for scheduled notifications
- * This should be called by a cron job service (like Vercel Cron, GitHub Actions, etc.)
+ * Call this endpoint daily to trigger automatic notifications
  *
- * Example: GET /api/cron/notifications?type=daily
+ * Example: GET /api/cron/notifications
  */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const type = searchParams.get('type') || 'daily';
-
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const currentMonth = `${year}-${month}`;
+    const dayOfMonth = now.getDate(); // 1-31
+    const month = now.getMonth() + 1; // 1-12
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 5 = Friday
 
-    let results: any = {
-      type,
-      timestamp: now.toISOString(),
-      notificationsCreated: 0,
-    };
+    let notificationsCreated = 0;
+    const details: string[] = [];
 
-    switch (type) {
-      case 'daily':
-        // Check for payments due soon
-        const dueSoon = await notifyPaymentsDueSoon();
-        // Check for overdue payments
-        const overdue = await notifyPaymentOverdue();
-        // Check for expiring contracts
-        const expiring = await notifyContractExpiring();
-
-        results.notificationsCreated =
-          (dueSoon?.length || 0) +
-          (overdue?.length || 0) +
-          (expiring?.length || 0);
-        break;
-
-      case 'monthly':
-        // Generate monthly summary
-        const summary = await generateMonthlySummary(currentMonth);
-        results.notificationsCreated = summary ? 1 : 0;
-        break;
-
-      default:
-        return NextResponse.json(
-          { error: 'نوع cron job غير صحيح' },
-          { status: 400 }
-        );
+    // 1. Bill entry reminder (1st of every month)
+    if (dayOfMonth === 1) {
+      const billEntry = await notifyBillEntryRequired();
+      if (billEntry) {
+        notificationsCreated++;
+        details.push('Bill entry reminder created');
+      }
     }
+
+    // 2. Water reader contact (odd months: 1,3,5,7,9,11 on the 1st)
+    if (dayOfMonth === 1 && month % 2 === 1) {
+      const waterReader = await notifyWaterReaderContact();
+      if (waterReader) {
+        notificationsCreated++;
+        details.push('Water reader contact created');
+      }
+    }
+
+    // 3. Meter reading reminder (January & June only, on the 1st)
+    if (dayOfMonth === 1 && (month === 1 || month === 6)) {
+      const meterReading = await notifyMeterReadingRequired();
+      if (meterReading) {
+        notificationsCreated++;
+        details.push('Meter reading reminder created');
+      }
+    }
+
+    // 4. Friday payment follow-up (every Friday)
+    if (dayOfWeek === 5) {
+      const fridayResult = await notifyFridayPaymentFollowup();
+      if (fridayResult) {
+        notificationsCreated++;
+        details.push('Friday payment follow-up created');
+      }
+    }
+
+    // 5. Lease expiry warnings (30 days before) - check daily
+    const expiringSoon = await notifyLeaseExpiringSoon();
+    if (expiringSoon && expiringSoon.length > 0) {
+      notificationsCreated += expiringSoon.length;
+      details.push(`${expiringSoon.length} lease expiry warnings created`);
+    }
+
+    const results = {
+      success: true,
+      timestamp: now.toISOString(),
+      date: now.toLocaleDateString('ar-EG'),
+      dayOfMonth,
+      month,
+      dayOfWeek,
+      notificationsCreated,
+      details,
+    };
 
     return NextResponse.json(results);
   } catch (error) {
     console.error('Error running cron job:', error);
     return NextResponse.json(
-      { error: 'فشل في تشغيل cron job' },
+      { error: 'فشل في تشغيل cron job', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -70,7 +91,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { secret, type } = body;
+    const { secret } = body;
 
     // Verify secret key (you should set this in environment variables)
     const cronSecret = process.env.CRON_SECRET;
@@ -82,10 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Execute the cron job
-    const response = await GET(
-      new NextRequest(`${process.env.NEXT_PUBLIC_APP_URL}/api/cron/notifications?type=${type || 'daily'}`)
-    );
-    return response;
+    return await GET(request);
   } catch (error) {
     console.error('Error running cron job:', error);
     return NextResponse.json(

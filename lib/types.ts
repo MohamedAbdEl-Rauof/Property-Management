@@ -95,14 +95,8 @@ export interface DashboardStats {
 // NOTIFICATIONS SYSTEM
 // ============================================================================
 
-// Notification Types
-export type NotificationType =
-  | 'payment_due_soon'        // موعد استحقاق قريب
-  | 'monthly_summary'         // ملخص شهري
-  | 'payment_overdue'         // فاتورة متأخرة
-  | 'contract_expiring'       // عقد ينتهي قريباً
-  | 'utility_bill_added'      // فاتورة مرافق جديدة (كهرباء/غاز/مياه)
-  | 'manual';                 // إشعار يدوي من الأدمن
+// Notification Types - Simple manual to-do list only
+export type NotificationType = 'manual';
 
 // ============================================================================
 // MONTHLY UTILITIES & BILL CALCULATIONS
@@ -174,11 +168,13 @@ export interface Notification {
   type: NotificationType;
   title: string;              // العنوان بالعربية
   message: string;            // الرسالة التفصيلية
-  read: boolean;              // مقروء/غير مقروء
+  status?: 'pending' | 'done' | 'dismissed';  // حالة الإشعار (جديد)
+  read?: boolean;             // حالة القراءة (قديم - للتوافق)
   link?: string;              // رابط للتوجيه (مثلاً: "/properties/123")
   propertyId?: string;        // معرف العقار
   property_name?: string;     // اسم العقار
   amount?: number;            // المبلغ
   dueDate?: string;           // تاريخ الاستحقاق
   createdAt: string;          // وقت الإنشاء
+  updatedAt?: string;         // وقت آخر تحديث
 }

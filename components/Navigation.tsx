@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Home, Building2, CreditCard, FileText, Plus, BarChart3 } from 'lucide-react';
-import { NotificationBell } from '@/components/NotificationBell';
+import { Home, Building2, CreditCard, FileText, Plus, BarChart3, Bell } from 'lucide-react';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -14,6 +13,7 @@ export function Navigation() {
     { href: '/properties', label: 'العقارات', icon: Building2 },
     { href: '/payments', label: 'المدفوعات', icon: CreditCard },
     { href: '/contracts', label: 'العقود', icon: FileText },
+    { href: '/notifications', label: 'الإشعارات', icon: Bell },
     { href: '/reports', label: 'التقارير', icon: BarChart3 },
   ];
 
@@ -46,7 +46,6 @@ export function Navigation() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <NotificationBell />
             <Link
               href="/properties/new"
               className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
