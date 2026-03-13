@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Property, PaymentRecord, Notification, MonthlyUtility, PropertyBillCalculation } from './types';
+import { Property, PaymentRecord, Notification, MonthlyUtility, PropertyBillCalculation, WhatsAppMessageConfig } from './types';
 
 const dataDir = path.join(process.cwd(), 'data');
 const propertiesFile = path.join(dataDir, 'properties.json');
@@ -8,6 +8,7 @@ const paymentsFile = path.join(dataDir, 'payments.json');
 const notificationsFile = path.join(dataDir, 'notifications.json');
 const monthlyUtilitiesFile = path.join(dataDir, 'monthly-utilities.json');
 const billCalculationsFile = path.join(dataDir, 'bill-calculations.json');
+const whatsappConfigFile = path.join(dataDir, 'whatsapp-config.json');
 
 // Ensure data directory exists
 async function ensureDataDir() {
@@ -602,4 +603,28 @@ export async function calculateBillForProperty(
 async function saveBillCalculations(calculations: PropertyBillCalculation[]): Promise<void> {
   await ensureDataDir();
   await fs.writeFile(billCalculationsFile, JSON.stringify(calculations, null, 2), 'utf-8');
+}
+
+// ============================================================================
+// WHATSAPP CONFIGURATION
+// ============================================================================
+
+export async function getWhatsAppConfig(): Promise<WhatsAppMessageConfig> {
+  await ensureDataDir();
+  try {
+    const data = await fs.readFile(whatsappConfigFile, 'utf-8');
+    return JSON.parse(data) || { adminPhoneNumber: '' };
+  } catch {
+    return { adminPhoneNumber: '' };
+  }
+}
+
+export async function updateWhatsAppConfig(
+  config: Partial<WhatsAppMessageConfig>
+): Promise<WhatsAppMessageConfig> {
+  const current = await getWhatsAppConfig();
+  const updated = { ...current, ...config };
+  await ensureDataDir();
+  await fs.writeFile(whatsappConfigFile, JSON.stringify(updated, null, 2), 'utf-8');
+  return updated;
 }

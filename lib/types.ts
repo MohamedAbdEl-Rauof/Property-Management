@@ -151,6 +151,8 @@ export interface PropertyBillCalculation {
     sharedElectricity: { amount: number; paid: boolean };
     repairs: { amount: number; paid: boolean; description?: string }[];
   };
+  arrears?: number;      // متاخرات
+  notes?: string;        // ملحوظة
   total: {
     rent: number;
     utilities: number;
@@ -177,4 +179,26 @@ export interface Notification {
   dueDate?: string;           // تاريخ الاستحقاق
   createdAt: string;          // وقت الإنشاء
   updatedAt?: string;         // وقت آخر تحديث
+}
+
+// ============================================================================
+// WHATSAPP MESSAGING SYSTEM
+// ============================================================================
+
+export interface WhatsAppMessageConfig {
+  adminPhoneNumber: string;
+}
+
+export interface WhatsAppTenantMessage {
+  phoneNumber: string;
+  message: string;
+  whatsappLink: string;
+}
+
+export interface WhatsAppAdminSummary {
+  phoneNumber: string;
+  message: string;
+  whatsappLink: string;
+  totalBills: number;
+  propertiesCount: number;
 }

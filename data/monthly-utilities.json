@@ -26,7 +26,7 @@
     "month": "2026-02",
     "utilities": {
       "electricity": {
-        "amount": 220,
+        "amount": 0,
         "paid": false
       },
       "gas": {
@@ -41,6 +41,28 @@
     "totalAmount": 220,
     "id": "4-2026-02",
     "createdAt": "2026-03-08T12:29:41.485Z",
-    "updatedAt": "2026-03-09T11:39:00.298Z"
+    "updatedAt": "2026-03-13T01:25:15.787Z"
+  },
+  {
+    "propertyId": "5",
+    "month": "2026-02",
+    "utilities": {
+      "electricity": {
+        "amount": 20,
+        "paid": false
+      },
+      "gas": {
+        "amount": 0,
+        "paid": false
+      },
+      "water": {
+        "amount": 0,
+        "paid": false
+      }
+    },
+    "totalAmount": 20,
+    "id": "5-2026-02",
+    "createdAt": "2026-03-13T01:26:56.825Z",
+    "updatedAt": "2026-03-13T01:26:56.825Z"
   }
 ]

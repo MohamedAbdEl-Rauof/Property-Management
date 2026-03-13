@@ -417,6 +417,24 @@ export function MonthlyReport({ calculations, properties, loadData }: MonthlyRep
                           </div>
                         )}
                       </div>
+
+                      {/* Arrears and Notes Section */}
+                      {((calc.arrears ?? 0) > 0 || calc.notes) && (
+                        <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                          {(calc.arrears ?? 0) > 0 && (
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium">متاخرات:</span>
+                              <span className="font-semibold">{(calc.arrears ?? 0).toFixed(2)} ج.م</span>
+                            </div>
+                          )}
+                          {calc.notes && (
+                            <div className="text-sm">
+                              <span className="font-medium">ملحوظة: </span>
+                              <span>{calc.notes}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

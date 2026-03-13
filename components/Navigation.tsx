@@ -17,8 +17,8 @@ export function Navigation() {
     { href: '/properties', label: 'العقارات', icon: Building2 },
     { href: '/payments', label: 'المدفوعات', icon: CreditCard },
     { href: '/contracts', label: 'العقود', icon: FileText },
-    { href: '/notifications', label: 'الإشعارات', icon: Bell },
     { href: '/reports', label: 'التقارير', icon: BarChart3 },
+    { href: '/notifications', label: 'الإشعارات', icon: Bell },
   ];
 
   return (

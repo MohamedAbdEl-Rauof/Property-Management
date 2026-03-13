@@ -5,6 +5,9 @@ import { Navigation } from '@/components/Navigation';
 import { MonthlyReport } from '@/components/reports/MonthlyReport';
 import { UtilityEntryDialog } from '@/components/reports/UtilityEntryDialog';
 import { ServicesCalculatorDialog } from '@/components/reports/ServicesCalculatorDialog';
+import { ArrearsNotesDialog } from '@/components/reports/ArrearsNotesDialog';
+import { WhatsAppMessagesModal } from '@/components/reports/WhatsAppMessagesModal';
+import { WhatsAppSettings } from '@/components/reports/WhatsAppSettings';
 import { Property, PropertyBillCalculation } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -85,9 +88,20 @@ export default function ReportsPage() {
           <CardContent className="pt-6">
             <div className="space-y-4">
               {/* Dialog Buttons */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <UtilityEntryDialog properties={properties} onSuccess={loadData} />
                 <ServicesCalculatorDialog onSuccess={loadData} />
+                <ArrearsNotesDialog
+                  calculations={calculations}
+                  properties={properties}
+                  onSuccess={loadData}
+                />
+              </div>
+
+              {/* WhatsApp Actions */}
+              <div className="flex gap-2 items-center">
+                <WhatsAppMessagesModal onSuccess={loadData} />
+                <WhatsAppSettings />
               </div>
             </div>
           </CardContent>
